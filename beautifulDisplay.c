@@ -5,7 +5,19 @@
 #include <ctype.h>
 #include <conio.h>
 
-int displayInput(char* prompt, char* result, int max, char password) {
+int displayInput(char* prompt, char* format, void* ptr) {
+    int i;
+    printf("\033[7m %s: \033[s", prompt); // 反色 & 保存光标位置
+    for (i = strlen(prompt); i < 37; i++) {
+        printf(" ");
+    }
+    printf("\033[u"); // 重置光标位置
+    i = scanf(format, ptr);
+    printf("\033[0m"); // 重置输出格式
+    return i;
+}
+
+int displayInputPassword(char* prompt, char* result, int max) {
     int i;
     char c;
     printf("\033[7m %s: \033[s", prompt); // 反色 & 保存光标位置
@@ -31,7 +43,7 @@ int displayInput(char* prompt, char* result, int max, char password) {
                 } else {
                     result[i] = c;
                     i++;
-                    printf("%c", password ? '*' : c);
+                    printf("*");
                 }
             } else {
                 result[i] = '\0';
