@@ -1,3 +1,9 @@
 {
-    "files.encoding": "gbk"
+    "files.encoding": "gbk",
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "*.vue": "vue",
+        "ctype.h": "c",
+        "string.h": "c"
+    }
 }
