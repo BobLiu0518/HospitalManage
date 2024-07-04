@@ -138,25 +138,56 @@ int printRecord(unsigned long recordId) {
                 printf("-");
             }
             printf("\n");
-            system("pause > nul");
             return 0;
         }
     }
     printf("未找到编号为 %010lu 的病历\n", recordId);
-    system("pause > nul");
     return -1;
 }
 
 int checkHistoryRecord(unsigned long long patientId) {
+    int historyRecordCount = 0, i, selection;
+    char** recordTitle;
+    Record historyRecord[RECORD_MAX];
     if (!recordCount) {
         loadRecordData();
+    }
+    for (i = 0; i < recordCount; i++) {
+        if (patientId == record[i].patientId) {
+            historyRecord[historyRecordCount] = record[i];
+            historyRecordCount++;
+        }
+    }
+    if (!historyRecordCount) {
+        printf("没有找到您的历史病历…");
+        return -1;
+    }
+
+    printf("[DEBUG] 找到 %d 个历史病历\n", historyRecordCount);
+
+    recordTitle = calloc(historyRecordCount, sizeof(char*));
+    for (i = 0; i < historyRecordCount; i++) {
+        recordTitle[i] = calloc(RECORD_TITLE_LENGTH, sizeof(char));
+        sprintf(recordTitle[i], "病历 #%010lu %04u/%02u/%02u %02u:%02u", historyRecord[i].recordId,
+            historyRecord[i].datetime.year, historyRecord[i].datetime.month, historyRecord[i].datetime.day,
+            historyRecord[i].datetime.hour, historyRecord[i].datetime.minute);
+    }
+
+    while (1) {
+        selection = displaySelect("查询到以下病历", historyRecordCount, recordTitle);
+        if (selection == -1) {
+            break;
+        }
+        printRecord(historyRecord[selection].recordId);
+        system("pause > nul");
     }
 }
 
 int main() {
     system("chcp 936 > nul");
     loadRecordData();
-    printRecord(1);
-    appendRecord(114514);
+    // printRecord(1);
+    // appendRecord(114514);
+    checkHistoryRecord(99999);
     system("pause > nul");
 }
