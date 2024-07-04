@@ -8,34 +8,23 @@
 
 int displayInput(char* prompt, char* format, void* ptr) {
     int i;
-    printf("\033[7m %s: \033[s", prompt); // 反色 & 保存光标位置
-    for (i = strlen(prompt); i < 37; i++) {
-        printf(" ");
-    }
-    printf("\033[u"); // 重置光标位置
+    printf("%s: \033[2m", prompt);
     i = scanf(format, ptr);
-    printf("\033[0m"); // 重置输出格式
+    printf("\033[0m");
     return i;
 }
 
 int displayInputMultiline(char* prompt, char* str, int max) {
-    int i, length = 0;
+    int length = 0;
     char* tmp = calloc(max, sizeof(char));
     str[0] = '\0';
-    printf("\033[7m %s: ", prompt); // 反色
-    for (i = strlen(prompt); i < 37; i++) {
-        printf(" ");
-    }
-    printf("\n");
-    getchar(); // 吃掉换行符
+    printf("%s:\n", prompt);
+    setbuf(stdin, NULL); // 清空 stdin，不知道为什么 fflush 不起作用
 
     do {
-        printf(" > \033[s"); // 保存光标位置
-        for (i = 0; i < 37; i++) {
-            printf(" ");
-        }
-        printf("\033[u"); // 重置光标位置
+        printf("> \033[2m");
         fgets(tmp, max, stdin);
+        printf("\033[0m");
         if (length + strlen(tmp) > max) {
             printf(Yellow("警告：")"已经超出长度限制，输入内容会被截断。\n");
             break;
@@ -44,18 +33,14 @@ int displayInputMultiline(char* prompt, char* str, int max) {
         strcat(str, tmp);
     } while (tmp[0] != '\n' && tmp[0] != '\r');
 
-    printf("\b\033[0m\n"); // 重置输出格式
+    printf("\n");
     return length;
 }
 
 int displayInputPassword(char* prompt, char* result, int max) {
     int i;
     char c;
-    printf("\033[7m %s: \033[s", prompt); // 反色 & 保存光标位置
-    for (i = strlen(prompt); i < 37; i++) {
-        printf(" ");
-    }
-    printf("\033[u"); // 重置光标位置
+    printf("%s: \033[2m", prompt);
     i = 0;
     while (1) {
         c = getch();
@@ -83,7 +68,7 @@ int displayInputPassword(char* prompt, char* result, int max) {
             }
         }
     }
-    printf("\033[0m\n"); // 重置输出格式
+    printf("\033[0m\n");
     return i;
 }
 
@@ -108,7 +93,7 @@ int displaySelect(char* prompt, int count, ...) {
         // 显示选项
         for (i = 0; i < count; i++) {
             if (selection == i) {
-                printf("\033[7m"); // 反色
+                printf("\033[30;100m"); // 反色
             }
             printf(" [%d] %s", i + 1, options[i]);
             for (j = strlen(options[i]); j < 35; j++) {

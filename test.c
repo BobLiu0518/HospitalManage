@@ -8,9 +8,9 @@ int main() {
     system("chcp 936 > nul");
     int selection;
     char str[1000];
-    displayInput("请输入用户名", str, 1000, 0);
+    displayInput("请输入用户名", "%s", str);
     printf("%s，你好！\n", str);
-    displayInput("请输入密码", str, 1000, 1);
+    displayInputPassword("请输入密码", str, 1000);
     printf("你的密码是 %s~", str);
     system("pause > nul");
     do {
