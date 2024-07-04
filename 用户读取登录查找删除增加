@@ -1,0 +1,111 @@
+#include <stdio.h> 
+#include "033(1).h" 
+#include <stdlib.h>
+#include <string.h>
+#define Red(x) "\033[31m"x"\033[0m"
+struct birthdate
+{
+	int year;
+	int month;
+	int date;
+};
+typedef struct users
+ {
+ 	int user_type;// 0管理员 1医生 2患者
+	long long id;
+	char name [20] ;
+	char password[100];
+	char phone[100];
+	char department[100];//若非医生则不填 
+	char title[100];//若非医生则不填 
+	char sex[20];
+	struct birthdate birth;
+}USERS;
+USERS user[100] ;
+int read_data(USERS user[])//从文件"data.txt"中读取 
+{
+	int i=0;
+	FILE*fp;
+	fp=fopen("data.txt","r");
+	  if (fp == NULL) {  
+        printf("无法打开文件");  
+        return -1; // 返回错误码  
+    }  
+	while (!feof(fp))
+	{fscanf(fp,"%d",&user[i].user_type);
+	if(user[i].user_type==1) 
+	fscanf(fp, " %lld %19s %99s %99s %99s %99s %19s %d %d %d", &user[i].id,user[i].name, user[i].password,   user[i].phone,
+	  user[i].department,   user[i].title,  user[i].sex,   &user[i].birth.year,   &user[i].birth.month,
+	   &user[i].birth.date);
+	else
+		fscanf(fp, " %lld %19s %99s %99s %99s  %d %d %d", &user[i].id,user[i].name, user[i].password,   user[i].phone, 
+		 user[i].sex,   &user[i].birth.year,   &user[i].birth.month,
+	   &user[i].birth.date);
+	   i++;
+	}
+	fclose(fp);
+	return i;
+}
+
+int login(USERS user[], int n, long long id, char password[100]) {  
+    long long input_id;  
+    char input_password[100];  
+  
+    printf("请输入用户名: ");  
+    scanf("%lld", &input_id);  
+    printf("请输入密码: ");  
+    scanf("%99s", input_password); 
+  
+    for (int i = 0; i < n; i++) {  
+        if (user[i].id == input_id && strcmp(user[i].password, input_password) == 0) {  
+            printf("登录成功!\n");  
+     return 1; 
+        }  
+    }  
+  
+    printf("用户名或密码错误!\n");  
+    return 0; 
+}
+void view_user(USERS user[], int n, long long id) {  
+    for (int i = 0; i < n; i++) {  
+        if (user[i].id == id) {  
+            printf("用户ID: %lld\n", user[i].id);  
+            printf("用户名: %s\n", user[i].name);  
+           //  printf("密码: %s\n", user[i].password); 实际中不应显示密码  
+            printf("电话: %s\n", user[i].phone);  
+            printf("性别: %s\n", user[i].sex);  
+            printf("生日: %d-%d-%d\n", user[i].birth.year, user[i].birth.month, user[i].birth.date);   
+            return;  
+        }  
+    }  
+    printf("未找到用户ID为%lld的用户\n", id);  
+}  
+  
+int add_user(USERS user[], int *n, USERS new_user) {  
+    if (*n >= 100) {  
+        printf("用户数量已达上限\n");  
+        return -1;  
+    }  
+    user[*n] = new_user;  
+    (*n)++;  
+    return 0;  
+}  
+int delete_user(USERS user[], int *n, long long id) {  
+    int found = 0;  
+    for (int i = 0; i < *n; i++) {  
+        if (user[i].id == id) {  
+            found = 1;  
+            for (int j = i; j < *n - 1; j++) {  
+                user[j] = user[j + 1];  
+            }  
+            (*n)--;  
+            break;  
+        }  
+    }  
+    if (!found) {  
+        printf("未找到用户ID为%lld的用户\n", id);  
+        return -1;  
+    }  
+    return 0;  
+}  
+  
