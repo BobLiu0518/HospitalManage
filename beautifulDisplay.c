@@ -7,9 +7,9 @@
 #include "033.h"
 
 int displayTitle(char* title) {
-    int i;
-    printf("\033[7m");
-    for (i = 0; i < 40;) {
+    int i = 0;
+    printf("\033[2J\033[7m");
+    while (i < 40) {
         if (i == (40 - strlen(title)) / 2 - 1) {
             printf("%s", title);
             i += strlen(title);
