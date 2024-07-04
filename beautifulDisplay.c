@@ -6,6 +6,21 @@
 #include <conio.h>
 #include "033.h"
 
+int displayTitle(char* title) {
+    int i;
+    printf("\033[7m");
+    for (i = 0; i < 40;) {
+        if (i == (40 - strlen(title)) / 2 - 1) {
+            printf("%s", title);
+            i += strlen(title);
+        } else {
+            printf(" ");
+            i++;
+        }
+    }
+    printf("\033[0m\n");
+}
+
 int displayInput(char* prompt, char* format, void* ptr) {
     int i;
     printf("%s: \033[2m", prompt);
