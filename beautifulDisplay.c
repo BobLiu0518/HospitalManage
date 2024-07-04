@@ -108,7 +108,6 @@ int displaySelect(char* prompt, int count, ...) {
             }
             printf("\033[0m\n"); // 重置输出样式
         }
-        // printf("---------------------------------------");
 
         // 处理按键
         input = getch();
