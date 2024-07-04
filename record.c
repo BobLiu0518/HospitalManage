@@ -1,16 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "beautifulDisplay.h"
+#include "timeTools.h"
 #include "consts.h"
 #include "033.h"
-
-typedef struct datetime {
-    unsigned year;
-    unsigned month;
-    unsigned day;
-    unsigned hour;
-    unsigned minute;
-} Datetime;
 
 typedef struct record {
     unsigned long recordId;
@@ -18,6 +11,8 @@ typedef struct record {
     unsigned long long patientId;
     unsigned long long doctorId;
     char content[RECORD_CONTENT_LENGTH];
+    // TODO: 开药
+    // TODO: 住院
 } Record;
 
 Record record[RECORD_MAX];
@@ -92,7 +87,7 @@ int saveRecordData() {
 }
 
 int appendRecord(unsigned long long doctorId) {
-    system("cls");
+    displayTitle("新增病历");
     if (!recordCount) {
         loadRecordData();
     }
@@ -102,7 +97,7 @@ int appendRecord(unsigned long long doctorId) {
     }
 
     record[recordCount].recordId = record[recordCount - 1].recordId + 1;
-    // TODO: datetime
+    record[recordCount].datetime = getDateTime();
     displayInput("请输入患者 ID", "%llu", &record[recordCount].patientId);
     /* TODO */
     // patient = getPatient(record[recordCount].patientId);
@@ -123,6 +118,7 @@ int printRecord(unsigned long recordId) {
     }
     for (i = 0; i < recordCount; i++) {
         if (record[i].recordId == recordId) {
+            displayTitle("病历详情");
             printf(Strong("病历 #%010lu %04u/%02u/%02u %02u:%02u\n"), recordId, record[i].datetime.year,
                 record[i].datetime.month, record[i].datetime.day, record[i].datetime.hour, record[i].datetime.minute);
             /* TODO */
@@ -163,8 +159,6 @@ int checkHistoryRecord(unsigned long long patientId) {
         return -1;
     }
 
-    printf("[DEBUG] 找到 %d 个历史病历\n", historyRecordCount);
-
     recordTitle = calloc(historyRecordCount, sizeof(char*));
     for (i = 0; i < historyRecordCount; i++) {
         recordTitle[i] = calloc(RECORD_TITLE_LENGTH, sizeof(char));
@@ -174,7 +168,7 @@ int checkHistoryRecord(unsigned long long patientId) {
     }
 
     while (1) {
-        selection = displaySelect("查询到以下病历", historyRecordCount, recordTitle);
+        selection = displaySelect("请选择要查看的病历：", historyRecordCount, recordTitle);
         if (selection == -1) {
             break;
         }
@@ -186,8 +180,7 @@ int checkHistoryRecord(unsigned long long patientId) {
 int main() {
     system("chcp 936 > nul");
     loadRecordData();
-    // printRecord(1);
-    // appendRecord(114514);
+    appendRecord(114514);
     checkHistoryRecord(99999);
     system("pause > nul");
 }
