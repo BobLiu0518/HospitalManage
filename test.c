@@ -1,10 +1,11 @@
+/*
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "beautifulDisplay.h"
 
 int main() {
     system("chcp 936 > nul");
-    /* 使用例 */
     int selection;
     char str[1000];
     displayInput("请输入用户名", str, 1000, 0);
@@ -22,3 +23,5 @@ int main() {
     system("pause > nul");
     return 0;
 }
+
+*/
