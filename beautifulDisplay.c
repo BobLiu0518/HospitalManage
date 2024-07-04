@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <conio.h>
+#include "033.h"
 
 int displayInput(char* prompt, char* format, void* ptr) {
     int i;
@@ -15,6 +16,36 @@ int displayInput(char* prompt, char* format, void* ptr) {
     i = scanf(format, ptr);
     printf("\033[0m"); // 重置输出格式
     return i;
+}
+
+int displayInputMultiline(char* prompt, char* str, int max) {
+    int i, length = 0;
+    char* tmp = calloc(max, sizeof(char));
+    str[0] = '\0';
+    printf("\033[7m %s: ", prompt); // 反色
+    for (i = strlen(prompt); i < 37; i++) {
+        printf(" ");
+    }
+    printf("\n");
+    getchar(); // 吃掉换行符
+
+    do {
+        printf(" > \033[s"); // 保存光标位置
+        for (i = 0; i < 37; i++) {
+            printf(" ");
+        }
+        printf("\033[u"); // 重置光标位置
+        fgets(tmp, max, stdin);
+        if (length + strlen(tmp) > max) {
+            printf(Yellow("警告：")"已经超出长度限制，输入内容会被截断。\n");
+            break;
+        }
+        length += strlen(tmp);
+        strcat(str, tmp);
+    } while (tmp[0] != '\n' && tmp[0] != '\r');
+
+    printf("\b\033[0m\n"); // 重置输出格式
+    return length;
 }
 
 int displayInputPassword(char* prompt, char* result, int max) {
