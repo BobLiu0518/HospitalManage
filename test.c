@@ -16,7 +16,7 @@ int main() {
     do {
         selection = displaySelect("请选择：", 5, "我是第一个选项", "我是第二个", "我应该是第三个吧", "那我就是第四个", "我是第五个");
         sprintf(str, "确定选择第 %d 个选项嘛？", selection + 1);
-        selection = displaySelect(str, 2, "是", "否");
+        selection = displaySelect(str, -2, "是", "否");
     } while (selection);
     printf("好的。\n");
 
