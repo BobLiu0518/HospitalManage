@@ -73,12 +73,19 @@ int displayInputPassword(char* prompt, char* result, int max) {
 }
 
 int displaySelect(char* prompt, int count, ...) {
-    int i, j, selection = 0, input;
+    int i, j, selection = 0, input, memoryAllocated = 0;
     va_list argList;
-    char** options = calloc(count, sizeof(char*));
+    char** options;
     va_start(argList, count);
-    for (i = 0; i < count; i++) {
-        options[i] = va_arg(argList, char*);
+    if (count < 0) {
+        count = -count;
+        memoryAllocated = 1;
+        options = calloc(count, sizeof(char*));
+        for (i = 0; i < count; i++) {
+            options[i] = va_arg(argList, char*);
+        }
+    } else {
+        options = va_arg(argList, char**);
     }
 
     printf("\033[?25l\033[2J"); // 隐藏光标 & 清屏
@@ -93,7 +100,7 @@ int displaySelect(char* prompt, int count, ...) {
         // 显示选项
         for (i = 0; i < count; i++) {
             if (selection == i) {
-                printf("\033[30;100m"); // 反色
+                printf("\033[30;47m"); // 反色
             }
             printf(" [%d] %s", i + 1, options[i]);
             for (j = strlen(options[i]); j < 35; j++) {
@@ -120,8 +127,10 @@ int displaySelect(char* prompt, int count, ...) {
     }
 
     printf("\033[1;1H\033[2J\033[?25h"); // 重置光标位置 & 清屏 & 显示光标
-    fflush(stdin);
+    if (memoryAllocated) {
+        free(options);
+    }
+    setbuf(stdin, NULL);
     va_end(argList);
-    free(options);
     return selection;
 }
