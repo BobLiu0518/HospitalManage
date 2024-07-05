@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <time.h>
 #include "timeTools.h"
 
@@ -14,9 +15,12 @@ Datetime getDateTime() {
 }
 
 Weekday getWeekday(Datetime datetime) {
-    struct tm* tm = NULL;
-    char str[11];
-    sprintf(str, "%4d/%2d/%2d", datetime.year, datetime.month, datetime.day);
-    strptime(str, "%Y/%m/%d", tm);
-    return tm->tm_wday;
+    struct tm tm = { 0 }, * ptm = NULL;
+    time_t t;
+    tm.tm_year = datetime.year - 1900;
+    tm.tm_mon = datetime.month - 1;
+    tm.tm_mday = datetime.day;
+    t = mktime(&tm);
+    ptm = localtime(&t);
+    return ptm->tm_wday;
 }
