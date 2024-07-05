@@ -47,6 +47,10 @@ int displayInputMultiline(char* prompt, char* str, int max) {
         length += strlen(tmp);
         strcat(str, tmp);
     } while (tmp[0] != '\n' && tmp[0] != '\r');
+    while (length > 0 && (str[length - 1] == '\n' || str[length - 1] == '\r')) {
+        str[length - 1] = '\0';
+        length--;
+    }
 
     printf("\n");
     return length;
