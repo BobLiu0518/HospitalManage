@@ -12,3 +12,11 @@ Datetime getDateTime() {
     datetime.minute = tm->tm_min;
     return datetime;
 }
+
+Weekday getWeekday(Datetime datetime) {
+    struct tm* tm = NULL;
+    char str[11];
+    sprintf(str, "%4d/%2d/%2d", datetime.year, datetime.month, datetime.day);
+    strptime(str, "%Y/%m/%d", tm);
+    return tm->tm_wday;
+}
