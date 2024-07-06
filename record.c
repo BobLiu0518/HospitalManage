@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "beautifulDisplay.h"
+#include "dynamicArray.h"
 #include "timeTools.h"
 #include "consts.h"
 #include "033.h"
@@ -15,12 +16,12 @@ typedef struct record {
     // TODO: 住院
 } Record;
 
-Record record[RECORD_MAX];
-int recordCount;
+DynamicArray records = { 0 };
 
 int loadRecordData() {
     int length;
     char filename[RECORD_FILENAME_LENGTH], datetime[15];
+    Record newRecord;
     FILE* fpRecord = fopen("storage\\record.csv", "r"), * fpContent = NULL;
     if (!fpRecord) {
         printf(Yellow("警告：")"读取文件 storage\\record.csv 失败，尝试创建空白文件。\n");
@@ -30,20 +31,24 @@ int loadRecordData() {
             return -1;
         }
     }
-    recordCount = 0;
+    if (records.ptr) {
+        freeDynamicArray(&records);
+    }
+    printf("[DEBUG] 正在初始化动态数组。\n");
+    initDynamicArray(&records, 128, sizeof(Record));
     while (!feof(fpRecord)) {
-        fscanf(fpRecord, "%lu,%[^,],%llu,%llu\n", &record[recordCount].recordId, datetime, &record[recordCount].patientId, &record[recordCount].doctorId);
-        sscanf(datetime, "%4u%2u%2u%2u%2u", &record[recordCount].datetime.year, &record[recordCount].datetime.month,
-            &record[recordCount].datetime.day, &record[recordCount].datetime.hour, &record[recordCount].datetime.minute);
-        sprintf(filename, "storage\\record\\%010lu.txt", record[recordCount].recordId);
+        fscanf(fpRecord, "%lu,%[^,],%llu,%llu\n", &newRecord.recordId, datetime, &newRecord.patientId, &newRecord.doctorId);
+        sscanf(datetime, "%4u%2u%2u%2u%2u", &newRecord.datetime.year, &newRecord.datetime.month,
+            &newRecord.datetime.day, &newRecord.datetime.hour, &newRecord.datetime.minute);
+        sprintf(filename, "storage\\record\\%010lu.txt", newRecord.recordId);
         fpContent = fopen(filename, "r");
         if (!fpContent) {
             printf(Yellow("警告：")"读取文件 %s 失败，尝试创建空白文件。\n", filename);
             fpContent = fopen(filename, "w+");
             if (!fpContent) {
                 printf(Red("错误：")"创建文件 %s 失败。\n", filename);
-                record[recordCount].content[0] = '\0';
-                recordCount++;
+                newRecord.content[0] = '\0';
+                appendItem(&records, &newRecord);
                 continue;
             }
         }
@@ -51,11 +56,11 @@ int loadRecordData() {
         length = ftell(fpContent);
         fseek(fpContent, 0, SEEK_SET);
         if (length) {
-            fread(record[recordCount].content, 1, length, fpContent);
+            fread(newRecord.content, 1, length, fpContent);
         }
-        record[recordCount].content[length] = '\0';
+        newRecord.content[length] = '\0';
         fclose(fpContent);
-        recordCount++;
+        appendItem(&records, &newRecord);
     }
     fclose(fpRecord);
     return 0;
@@ -64,22 +69,24 @@ int loadRecordData() {
 int saveRecordData() {
     int i;
     char filename[RECORD_FILENAME_LENGTH], datetime[15];
+    Record* record = NULL;
     FILE* fpRecord = fopen("storage\\record.csv", "w"), * fpContent = NULL;
     if (!fpRecord) {
         printf(Red("错误：")"创建文件 storage\\record.csv 失败。\n");
         return -1;
     }
-    for (i = 0; i < recordCount && i < RECORD_MAX; i++) {
-        sprintf(datetime, "%04u%02u%02u%02u%02u", record[i].datetime.year, record[i].datetime.month,
-            record[i].datetime.day, record[i].datetime.hour, record[i].datetime.minute);
-        fprintf(fpRecord, "%lu,%s,%llu,%llu\n", record[i].recordId, datetime, record[i].patientId, record[i].doctorId);
-        sprintf(filename, "storage\\record\\%010lu.txt", record[i].recordId);
+    for (i = 0; i < records.length; i++) {
+        record = getItem(&records, i);
+        sprintf(datetime, "%04u%02u%02u%02u%02u", record->datetime.year, record->datetime.month,
+            record->datetime.day, record->datetime.hour, record->datetime.minute);
+        fprintf(fpRecord, "%lu,%s,%llu,%llu\n", record->recordId, datetime, record->patientId, record->doctorId);
+        sprintf(filename, "storage\\record\\%010lu.txt", record->recordId);
         fpContent = fopen(filename, "w");
         if (!fpContent) {
             printf(Red("错误：")"创建文件 %s 失败。\n", filename);
             continue;
         }
-        fprintf(fpContent, "%s", record[i].content);
+        fprintf(fpContent, "%s", record->content);
         fclose(fpContent);
     }
     fclose(fpRecord);
@@ -87,23 +94,20 @@ int saveRecordData() {
 }
 
 int appendRecord(unsigned long long doctorId) {
+    Record newRecord;
     displayTitle("新增病历");
-    if (!recordCount) {
+    if (!records.length) {
         loadRecordData();
     }
-    if (recordCount == RECORD_MAX) {
-        printf(Red("错误：")"病历数已达上限，无法继续添加。\n");
-        return -1;
-    }
 
-    record[recordCount].recordId = record[recordCount - 1].recordId + 1;
-    record[recordCount].datetime = getDateTime();
-    displayInput("请输入患者 ID", "%llu", &record[recordCount].patientId);
+    newRecord.recordId = ((Record*)getItem(&records, records.length - 1))->recordId + 1;
+    newRecord.datetime = getDateTime();
+    displayInput("请输入患者 ID", "%llu", &newRecord.patientId);
     /* TODO */
-    // patient = getPatient(record[recordCount].patientId);
+    // patient = getPatient(newRecord.patientId);
     printf("患者：%s %s %d岁\n", "张三", "男", 18);
-    displayInputMultiline("请输入病历信息", record[recordCount].content, RECORD_CONTENT_LENGTH);
-    recordCount++;
+    displayInputMultiline("请输入病历信息", newRecord.content, RECORD_CONTENT_LENGTH);
+    appendItem(&records, &newRecord);
 
     saveRecordData();
     printf("添加病历信息成功\n");
@@ -113,23 +117,25 @@ int appendRecord(unsigned long long doctorId) {
 
 int printRecord(unsigned long recordId) {
     int i, j;
-    if (!recordCount) {
+    Record* record;
+    if (!records.length) {
         loadRecordData();
     }
-    for (i = 0; i < recordCount; i++) {
-        if (record[i].recordId == recordId) {
+    for (i = 0; i < records.length; i++) {
+        record = getItem(&records, i);
+        if (record->recordId == recordId) {
             displayTitle("病历详情");
-            printf(Strong("病历 #%010lu %04u/%02u/%02u %02u:%02u\n"), recordId, record[i].datetime.year,
-                record[i].datetime.month, record[i].datetime.day, record[i].datetime.hour, record[i].datetime.minute);
+            printf(Strong("病历 #%010lu %04u/%02u/%02u %02u:%02u\n"), recordId, record->datetime.year,
+                record->datetime.month, record->datetime.day, record->datetime.hour, record->datetime.minute);
             /* TODO */
-            // patient = getPatient(record[i].patientId);
-            printf("患者：%s %s %d岁 就诊卡号%llu\n", "张三", "男", 18, record[i].patientId);
-            // doctor = getDoctor(record[i].doctorId);
+            // patient = getPatient(record->patientId);
+            printf("患者：%s %s %d岁 就诊卡号%llu\n", "张三", "男", 18, record->patientId);
+            // doctor = getDoctor(record->doctorId);
             printf("医生：%s %s 工号%llu\n", "李四", "副主任医师", 100);
             for (j = 0; j < 40; j++) {
                 printf("-");
             }
-            printf("\n%s\n", record[i].content);
+            printf("\n%s\n", record->content);
             for (j = 0; j < 40; j++) {
                 printf("-");
             }
@@ -144,13 +150,14 @@ int printRecord(unsigned long recordId) {
 int checkHistoryRecord(unsigned long long patientId) {
     int historyRecordCount = 0, i, selection;
     char** recordTitle;
-    Record historyRecord[RECORD_MAX];
-    if (!recordCount) {
+    Record* historyRecord = calloc(records.length, sizeof(Record)), * record;
+    if (!records.length) {
         loadRecordData();
     }
-    for (i = 0; i < recordCount; i++) {
-        if (patientId == record[i].patientId) {
-            historyRecord[historyRecordCount] = record[i];
+    for (i = 0; i < records.length; i++) {
+        record = getItem(&records, i);
+        if (patientId == record->patientId) {
+            historyRecord[historyRecordCount] = *record;
             historyRecordCount++;
         }
     }

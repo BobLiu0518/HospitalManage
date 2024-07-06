@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "033.h"
 #include "dynamicArray.h"
 
@@ -16,7 +17,7 @@ int initDynamicArray(DynamicArray* arr, unsigned capacity, size_t item_size) {
 }
 
 int appendItem(DynamicArray* arr, void* item) {
-    if (arr->length <= 0 || !arr->ptr) {
+    if (arr->capacity <= 0 || !arr->ptr) {
         printf(Red("错误：")"动态数组未初始化。\n");
         return -1;
     }
