@@ -133,15 +133,15 @@ void importMedicine() {
         printf("Failed to open file.\n");
         return;
     }
-    char fullName[100], abbreviation[20], buffer[256];
+    char fullName[100], abbreviation[20];
     int stock;
     while (head) {
         current = head->next;
         free(head);
         head = current;
     }
-    while (fgets(buffer, sizeof(buffer), fp)) {
-        sscanf(buffer, "Full Name: %[^,], Abbreviation: %[^,], Stock: %d", fullName, abbreviation, &stock);
+    while (!feof(fp)) {
+        fscanf(fp, "Full Name: %[^,], Abbreviation: %[^,], Stock: %d\n", fullName, abbreviation, &stock);
         Medicine* newMedicine = (Medicine*)malloc(sizeof(Medicine));
         strcpy(newMedicine->fullName, fullName);
         strcpy(newMedicine->abbreviation, abbreviation);
