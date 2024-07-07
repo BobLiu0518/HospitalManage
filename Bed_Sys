@@ -1,0 +1,194 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define MAX_ZONES 5
+#define MAX_BEDS_PER_ZONE 10
+#define BED_STATUS_EMPTY 0
+#define BED_STATUS_OCCUPIED 1
+
+typedef struct {
+    int bedNumber;
+    int status; // BED_STATUS_EMPTY or BED_STATUS_OCCUPIED
+} Bed;
+
+typedef struct {
+    char zoneName[50];
+    Bed beds[MAX_BEDS_PER_ZONE];
+} Zone;
+
+typedef struct {
+    char patientName[100];
+    char admissionDate[50];
+    int zoneIndex;
+    int bedNumber;
+} OccupancyRecord;
+
+Zone zones[MAX_ZONES];
+
+void initializeZones() {
+    for (int i = 0; i < MAX_ZONES; i++) {
+        sprintf(zones[i].zoneName, "Zone %d", i + 1);
+        for (int j = 0; j < MAX_BEDS_PER_ZONE; j++) {
+            zones[i].beds[j].bedNumber = j + 1;
+            zones[i].beds[j].status = BED_STATUS_EMPTY;
+        }
+    }
+}
+
+void saveZonesToFile(const char *filename) {
+    FILE *file = fopen(filename, "w");
+    if (!file) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < MAX_ZONES; i++) {
+        fprintf(file, "%s\n", zones[i].zoneName);
+        for (int j = 0; j < MAX_BEDS_PER_ZONE; j++) {
+            fprintf(file, "%d,%d\n", zones[i].beds[j].bedNumber, zones[i].beds[j].status);
+        }
+    }
+    fclose(file);
+}
+
+void loadZonesFromFile(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    char zoneName[50];
+    int bedNumber, status;
+    char line[100];
+    for (int i = 0; i < MAX_ZONES && fgets(line, sizeof(line), file); i++) {
+        sscanf(line, "%49[^\n]", zoneName);
+        strcpy(zones[i].zoneName, zoneName);
+        for (int j = 0; j < MAX_BEDS_PER_ZONE && fgets(line, sizeof(line), file); j++) {
+            sscanf(line, "%d,%d", &bedNumber, &status);
+            zones[i].beds[j].bedNumber = bedNumber;
+            zones[i].beds[j].status = status;
+        }
+    }
+    fclose(file);
+}
+
+void recordOccupancy(const char *patientName, const char *admissionDate, int zoneIndex, int bedNumber) {
+    OccupancyRecord record;
+    strcpy(record.patientName, patientName);
+    strcpy(record.admissionDate, admissionDate);
+    record.zoneIndex = zoneIndex;
+    record.bedNumber = bedNumber;
+
+    FILE *file = fopen("BedList.txt", "a");
+    if (!file) {
+        perror("Error opening BedList.txt");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(file, "Patient: %s, Admission Date: %s, Zone: %d, Bed: %d\n",
+            record.patientName, record.admissionDate, record.zoneIndex + 1, record.bedNumber);
+    fclose(file);
+
+    // Update bed status in memory
+    zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_OCCUPIED;
+}
+
+int main() {
+    // Load bed information from file if it exists
+    FILE *testFile = fopen("BedInfo.txt", "r");
+    if (testFile) {
+             fclose(testFile);
+        loadZonesFromFile("BedInfo.txt");
+    } else {
+        initializeZones();
+        saveZonesToFile("BedInfo.txt");
+    }
+
+    // Main loop to interact with the user
+    int choice;
+    do {
+        printf("\nWelcome to Bed Management System!\n");
+        printf("1. Record a new occupancy\n");
+        printf("2. View bed occupancy records\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar(); // Consume newline left in stdin buffer
+
+        switch (choice) {
+            case 1: {
+                char patientName[100];
+                char admissionDate[50];
+                int zoneIndex, bedNumber;
+
+                printf("Enter patient name: ");
+                fgets(patientName, sizeof(patientName), stdin);
+                patientName[strcspn(patientName, "\n")] = 0; // Remove newline character
+
+                printf("Enter admission date (e.g.2004-07-03): ");
+                fgets(admissionDate, sizeof(admissionDate), stdin);
+                admissionDate[strcspn(admissionDate, "\n")] = 0; // Remove newline character
+
+                printf("Select a zone:\n");
+                for (int i = 0; i < MAX_ZONES; i++) {
+                    printf("%d. %s\n", i + 1, zones[i].zoneName);
+                }
+                printf("Enter zone index: ");
+                scanf("%d", &zoneIndex);
+                if (zoneIndex> MAX_ZONES||zoneIndex<1)
+                {
+                     printf("Invaild zone.( Numbers from 1-5 are acceptable.)\n");
+                     break;
+                }
+                else
+                    {
+                getchar(); // Consume newline left in stdin buffer
+
+                printf("Enter bed number: ");
+                scanf("%d", &bedNumber);
+
+                // Check if the bed is available
+                if(bedNumber-1<MAX_BEDS_PER_ZONE&&bedNumber>=1)
+                {
+                if (zones[zoneIndex - 1].beds[bedNumber - 1].status == BED_STATUS_EMPTY) {
+                    recordOccupancy(patientName, admissionDate, zoneIndex - 1, bedNumber);
+                    printf("Occupancy recorded successfully.\n");
+                }
+                else
+                    {
+                        printf("The selected bed is already occupied.\n");
+                        }
+                break;
+                }
+                else
+                    printf("Invaild bed.( Numbers from 1-10 are acceptable.)\n");
+                    break;
+                    }
+            }
+            case 2: {
+                printf("Bed occupancy records:\n");
+                FILE *recordsFile = fopen("BedList.txt", "r");
+                if (recordsFile) {
+                    char line[256];
+                    while (fgets(line, sizeof(line), recordsFile)) {
+                        printf("%s", line);
+                    }
+                    fclose(recordsFile);
+                } else {
+                    printf("No records found.\n");
+                }
+                break;
+            }
+            case 3:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != 3);
+
+    // Save the current bed statuses before exiting
+    saveZonesToFile("BedInfo.txt");
+
+    return 0;
+}
