@@ -11,7 +11,7 @@ void create_data() {
     int i, j, k;
     USERS patients[50];
     FILE* fp;
-    fp = fopen("data.txt", "w");
+    fp = fopen("storage\\user.txt", "w");
     if (fp == NULL) {
         printf("Error opening file");
         return;
@@ -153,7 +153,7 @@ void add_user(USERS* new_user) {
     }
 }
 int read_user_data() {
-    FILE* fp = fopen("data.txt", "r");
+    FILE* fp = fopen("storage\\user.txt", "r");
     if (fp == NULL) {
         printf(Red("无法打开文件"));
         return -1;

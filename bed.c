@@ -59,7 +59,7 @@ void recordOccupancy(const char* patientName, const char* admissionDate, int zon
     record.zoneIndex = zoneIndex;
     record.bedNumber = bedNumber;
 
-    FILE* file = fopen("BedList.txt", "a");
+    FILE* file = fopen("storage\\BedList.txt", "a");
     if (!file) {
         perror("Error opening BedList.txt");
         exit(EXIT_FAILURE);
@@ -89,13 +89,13 @@ int deleteOccupancy(int zoneIndex, int bedNumber) {
 
 int bedMain() {
     // Load bed information from file if it exists
-    FILE* testFile = fopen("BedInfo.txt", "r");
+    FILE* testFile = fopen("storage\\BedInfo.txt", "r");
     if (testFile) {
         fclose(testFile);
-        loadZonesFromFile("BedInfo.txt");
+        loadZonesFromFile("storage\\BedInfo.txt");
     } else {
         initializeZones();
-        saveZonesToFile("BedInfo.txt");
+        saveZonesToFile("storage\\BedInfo.txt");
     }
 
     // Main loop to interact with the user
@@ -155,7 +155,7 @@ int bedMain() {
         }
         case 2: {
             printf("Bed occupancy records:\n");
-            FILE* recordsFile = fopen("BedList.txt", "r");
+            FILE* recordsFile = fopen("storage\\BedList.txt", "r");
             if (recordsFile) {
                 char line[256];
                 while (fgets(line, sizeof(line), recordsFile)) {
@@ -203,7 +203,7 @@ int bedMain() {
     } while (choice != 4);
 
     // Save the current bed statuses before exiting
-    saveZonesToFile("BedInfo.txt");
+    saveZonesToFile("storage\\BedInfo.txt");
 
     return 0;
 }
