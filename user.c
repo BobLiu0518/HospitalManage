@@ -6,7 +6,7 @@
 
 USERS* user;
 // 链表头指针  
-USERS* head = NULL;
+USERS* user_head = NULL;
 void create_data() {
     int i, j, k;
     USERS patients[50];
@@ -139,17 +139,17 @@ USERS* create_user() {
     return new_user;
 }
 void add_user(USERS* new_user) {
-    if (head == NULL) {
-        head = new_user;
+    if (user_head == NULL) {
+        user_head = new_user;
         new_user->next = NULL;
     } else {
-        /*        USERS* temp = head;
+        /*        USERS* temp = user_head;
                 while (temp->next != NULL) {
                     temp = temp->next;
                 }
                 temp->next = new_user;  */
-        new_user->next = head;
-        head = new_user;
+        new_user->next = user_head;
+        user_head = new_user;
     }
 }
 int read_user_data() {
@@ -194,7 +194,7 @@ int login() {
     printf("请输入密码: ");
     scanf("%99s", input_password);
 
-    USERS* temp = head;
+    USERS* temp = user_head;
     while (temp != NULL) {
         if (temp->id == input_id && strcmp(temp->password, input_password) == 0) {
             printf("登录成功!\n");
@@ -210,14 +210,14 @@ int login() {
 
 void free_users() {
     USERS* temp;
-    while (head != NULL) {
-        temp = head;
-        head = head->next;
+    while (user_head != NULL) {
+        temp = user_head;
+        user_head = user_head->next;
         free(temp);
     }
 }
 USERS* find_user_by_id(long long input_id) {
-    USERS* temp = head;
+    USERS* temp = user_head;
     while (temp != NULL) {
         if (temp->id == input_id) {
             return temp;
@@ -247,11 +247,11 @@ void display_user_info(USERS* user) {
 }
 
 int delete_user(long long input_id) {
-    USERS* temp = head, * prev = NULL;
+    USERS* temp = user_head, * prev = NULL;
     while (temp != NULL) {
         if (temp->id == input_id) {
             if (prev == NULL) {
-                head = temp->next;
+                user_head = temp->next;
             } else {
                 prev->next = temp->next;
             }
@@ -266,7 +266,7 @@ int delete_user(long long input_id) {
 }
 
 int user_main() {
-    head = NULL;
+    user_head = NULL;
     create_data();
     read_user_data();
     int choice;

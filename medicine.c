@@ -3,7 +3,7 @@
 #include <string.h>
 #include "medicine.h"
 
-Medicine* head = NULL;
+Medicine* medicineHead = NULL;
 
 // 录入药品
 void addMedicine() {
@@ -18,14 +18,14 @@ void addMedicine() {
     if (newMedicine->stock < 0)
         printf("Invalid choice. Please try again.\n");
     else {
-        newMedicine->next = head;
-        head = newMedicine;
+        newMedicine->next = medicineHead;
+        medicineHead = newMedicine;
         printf("Medicine added successfully!\n");
     }
 }
 // 查看所有药品
 void viewMedicine() {
-    Medicine* current = head;
+    Medicine* current = medicineHead;
     if (current == NULL) {
         printf("No medicines recorded.\n");
         return;
@@ -42,7 +42,7 @@ void updateMedicine() {
     char abbr[20];
     printf("Enter abbreviation of medicine to update: ");
     scanf("%s", abbr);
-    Medicine* current = head;
+    Medicine* current = medicineHead;
     while (current != NULL) {
         if (strcmp(current->abbreviation, abbr) == 0) {
             printf("Enter new stock quantity: ");
@@ -57,7 +57,7 @@ void updateMedicine() {
 
 // 减少药品库存
 int ModifyStock(char abbr[ ], int quantity) {
-    Medicine* current = head;
+    Medicine* current = medicineHead;
     while (current != NULL) {
         if (strcmp(current->abbreviation, abbr) == 0) {
             if (current->stock >= quantity) {
@@ -78,11 +78,11 @@ void deleteMedicine() {
     char abbr[20];
     printf("Enter abbreviation of medicine to delete: ");
     scanf("%s", abbr);
-    Medicine* current = head, * prev = NULL;
+    Medicine* current = medicineHead, * prev = NULL;
     while (current != NULL) {
         if (strcmp(current->abbreviation, abbr) == 0) {
             if (prev == NULL) {
-                head = current->next;
+                medicineHead = current->next;
             } else {
                 prev->next = current->next;
             }
@@ -105,7 +105,7 @@ void exportMedicine() {
     }
 
     // 保存一个临时指针来遍历链表
-    Medicine* current = head;
+    Medicine* current = medicineHead;
     Medicine* temp;
 
     // 导出数据
@@ -129,10 +129,10 @@ void importMedicine() {
     }
     char fullName[100], abbreviation[20];
     int stock;
-    while (head) {
-        current = head->next;
-        free(head);
-        head = current;
+    while (medicineHead) {
+        current = medicineHead->next;
+        free(medicineHead);
+        medicineHead = current;
     }
     while (!feof(fp)) {
         fscanf(fp, "Full Name: %[^,], Abbreviation: %[^,], Stock: %d\n", fullName, abbreviation, &stock);
@@ -140,8 +140,8 @@ void importMedicine() {
         strcpy(newMedicine->fullName, fullName);
         strcpy(newMedicine->abbreviation, abbreviation);
         newMedicine->stock = stock;
-        newMedicine->next = head;
-        head = newMedicine;
+        newMedicine->next = medicineHead;
+        medicineHead = newMedicine;
     }
     fclose(fp);
     printf("Medicine list imported successfully!\n");
