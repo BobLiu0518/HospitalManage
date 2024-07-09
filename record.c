@@ -5,20 +5,7 @@
 #include "fileTools.h"
 #include "timeTools.h"
 #include "033.h"
-
-#define RECORD_CONTENT_LENGTH 1000
-#define RECORD_FILENAME_LENGTH 100
-#define RECORD_TITLE_LENGTH 40
-
-typedef struct record {
-    unsigned long recordId;
-    Datetime datetime;
-    long long patientId;
-    long long doctorId;
-    char content[RECORD_CONTENT_LENGTH];
-    // TODO: ¿ªÒ©
-    // TODO: ×¡Ôº
-} Record;
+#include "record.h"
 
 DynamicArray records = { 0 };
 
