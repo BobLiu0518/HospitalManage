@@ -1,102 +1,102 @@
-#include <stdio.h>  
-#include <stdlib.h>  
-#include <string.h>  
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include "033.h"
 #include "user.h"
+#include "beautifulDisplay.h"
+#include "passwordTools.h"
 
-USERS* user;
-// 链表头指针  
 USERS* user_head = NULL;
 void create_data() {
-    int i, j, k;
-    USERS patients[50];
+    int i;
+    char password[100];
+    USERS patient, doctor, admin;
     FILE* fp;
+    srand((unsigned)time(NULL));
     fp = fopen("storage\\user.txt", "w");
     if (fp == NULL) {
-        printf("Error opening file");
+        printf(Red("错误：")"无法打开 storage\\user.txt。\n");
         return;
     }
-    for (int i = 0; i < 50; i++) {
-        patients[i].user_type = 2; // 患者  
-        patients[i].id = 30000 + i + 1; // 假设ID从30001开始  
-        snprintf(patients[i].name, sizeof(patients[i].name), "Patient%03d", i + 1);
-        snprintf(patients[i].password, sizeof(patients[i].password), "PatientPass%d", i + 1);
-        snprintf(patients[i].phone, sizeof(patients[i].phone), "138%09d", (i * 123456789) % 1000000000);
-        strcpy(patients[i].sex, (i % 2 == 0) ? "男" : "女");
-        patients[i].birth.year = 1930 + (i % 91);
-        patients[i].birth.month = (i % 12) + 1;
-        patients[i].birth.date = (i % 28) + 1;
-        strcpy(patients[i].department, "");
-        strcpy(patients[i].title, "");
-    }
-
-    for (i = 0; i < 50; i++) {
+    for (i = 0; i < 100; i++) {
+        patient.user_type = 2;
+        patient.id = 30000 + i;
+        sprintf(patient.name, "Patient%03d", i + 1);
+        sprintf(password, "PatientPass%d", i + 1);
+        encryptPassword(password, patient.password);
+        sprintf(patient.phone, "133%08d", rand() % 100000000);
+        strcpy(patient.sex, (rand() % 2 == 0) ? "男" : "女");
+        patient.birth.year = 1930 + (rand() % 91);
+        patient.birth.month = (rand() % 12) + 1;
+        patient.birth.date = (rand() % 28) + 1;
+        strcpy(patient.department, "");
+        strcpy(patient.title, "");
         fprintf(fp, "2 %lld %s %s %s %s %d %d %d\n",
-            patients[i].id, patients[i].name, patients[i].password,
-            patients[i].phone, patients[i].sex,
-            patients[i].birth.year, patients[i].birth.month, patients[i].birth.date);
-    }   printf("%d\n", i);
-    USERS doctors[30]; // 假设你已经有了一个足够大的数组来存储医生信息  
-
-    for (int j = 0; j < 30; j++) {
-        doctors[j].user_type = 1; // 医生  
-        doctors[j].id = 20000 + j + 1; // 假设ID从20001开始  
-
-        snprintf(doctors[j].name, sizeof(doctors[j].name), "Doctor%d", j + 1);
-        snprintf(doctors[j].password, sizeof(doctors[j].password), "DoctorPass%d", j + 1);
-        snprintf(doctors[j].phone, sizeof(doctors[j].phone), "123456789%d", j + 1);
-
-        const char* departments[ ] = { "内科", "外科", "儿科", "妇产科", "骨科", "眼科" };
-        const char* titles[ ] = { "主任医师", "副主任医师", "主治医师", "住院医师" };
-        int dept_index = j % (sizeof(departments) / sizeof(departments[0]));
-        int title_index = (j / 5) % (sizeof(titles) / sizeof(titles[0])); // 假设每5个医生中有一个不同的职称  
-        strcpy(doctors[j].department, departments[dept_index]);
-        strcpy(doctors[j].title, titles[title_index]);
-        strcpy(doctors[j].sex, (j % 2 == 0) ? "男" : "女");
-
-        doctors[j].birth.year = 1970 + (j % 30); // 假设医生年龄分布在40-70岁之间  
-        doctors[j].birth.month = (j % 12) + 1;
-        doctors[j].birth.date = (j % 28) + 1; // 简化处理，不考虑月份天数差异  
+            patient.id, patient.name, patient.password,
+            patient.phone, patient.sex,
+            patient.birth.year, patient.birth.month, patient.birth.date);
     }
 
-    for (j = 0; j < 30; j++) {
-        fprintf(fp, "1 %lld %s %s %s %s %s %d %d %d\n",
-            doctors[j].id, doctors[j].name, doctors[j].department, doctors[j].title,
-            doctors[j].phone, doctors[j].sex, doctors[j].birth.year, doctors[j].birth.month, doctors[j].birth.date);
-    }
-    printf("%d\n", j);
-    USERS admins[10];
-    for (int k = 0; k < 10; k++) {
-        admins[k].user_type = 0;
-        admins[k].id = 10000 + k + 1; // 假设ID从10001开始    
-        snprintf(admins[k].name, sizeof(admins[k].name), "Admin%d", k + 1);
-        snprintf(admins[k].password, sizeof(admins[k].password), "AdminPass%d", k + 1);
-        snprintf(admins[k].phone, sizeof(admins[k].phone), "12345%05d", k + 1);
-        strcpy(admins[k].department, "");
-        strcpy(admins[k].title, "");
-        strcpy(admins[k].sex, (k % 2 == 0) ? "男" : "女");
-        admins[k].birth.year = 1980 + (k % 10);
-        admins[k].birth.month = (k % 12) + 1;
-        admins[k].birth.date = (k % 28) + 1; // 简化处理，不考虑月份天数差异    
+    const char* departments[ ] = { "眼科", "耳鼻喉科", "肝胆胰外科", "甲乳外科", "创伤骨科", "心外科", "胸外科", "心内科", "神经内科", "血液科", "皮肤科" };
+    const char* titles[ ] = { "主任医师", "副主任医师", "主治医师", "住院医师" };
+    for (i = 0; i < 300; i++) {
+        doctor.user_type = 1;
+        doctor.id = 20000 + i;
+        sprintf(doctor.name, "Doctor%d", i + 1);
+        sprintf(password, "DoctorPass%d", i + 1);
+        encryptPassword(password, doctor.password);
+        sprintf(doctor.phone, "155%08d", rand() % 100000000);
+        int dept_index = rand() % (sizeof(departments) / sizeof(departments[0]));
+        int title_index = rand() % (sizeof(titles) / sizeof(titles[0]));
+        strcpy(doctor.department, departments[dept_index]);
+        strcpy(doctor.title, titles[title_index]);
+        strcpy(doctor.sex, (rand() % 2 == 0) ? "男" : "女");
+        doctor.birth.year = 1970 + (rand() % 30);
+        doctor.birth.month = (rand() % 12) + 1;
+        doctor.birth.date = (rand() % 28) + 1;
+        fprintf(fp, "1 %lld %s %s %s %s %s %s %d %d %d\n",
+            doctor.id, doctor.name, doctor.department, doctor.title,
+            doctor.phone, doctor.sex, doctor.password,
+            doctor.birth.year, doctor.birth.month, doctor.birth.date);
     }
 
-    for (k = 0; k < 10; k++) {
-        fprintf(fp, "0  %lld %s %s %s %d %d %d\n",
-            admins[k].id, admins[k].name, admins[k].phone, admins[k].sex,
-            admins[k].birth.year, admins[k].birth.month, admins[k].birth.date);
+    for (i = 0; i < 10; i++) {
+        admin.user_type = 0;
+        admin.id = 10000 + i;
+        sprintf(admin.name, "Admin%d", i + 1);
+        sprintf(password, "AdminPass%d", i + 1);
+        encryptPassword(password, admin.password);
+        sprintf(admin.phone, "188%08d", rand() % 100000000);
+        strcpy(admin.department, "");
+        strcpy(admin.title, "");
+        strcpy(admin.sex, (rand() % 2 == 0) ? "男" : "女");
+        admin.birth.year = 1980 + (rand() % 10);
+        admin.birth.month = (rand() % 12) + 1;
+        admin.birth.date = (rand() % 28) + 1;
+        fprintf(fp, "0 %lld %s %s %s %s %d %d %d\n",
+            admin.id, admin.name, admin.password, admin.phone, admin.sex,
+            admin.birth.year, admin.birth.month, admin.birth.date);
+    }
 
-    }     printf("%d\n", k);
+    encryptPassword("11111", password);
+    fprintf(fp, "0 11111 Admin0 %s 18888888888 男 1906 9 6\n", password);
+    encryptPassword("55555", password);
+    fprintf(fp, "1 55555 袁张 病理科 院长 155555555555 女 %s 1999 9 9\n", password);
+    encryptPassword("99999", password);
+    fprintf(fp, "2 99999 王二麻子 %s 19999999999 男 2024 7 9", password);
+
     fclose(fp);
 }
+
 USERS* create_user() {
     USERS* new_user = (USERS*)malloc(sizeof(USERS));
     if (!new_user) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(EXIT_FAILURE);
+        printf(Red("错误：")"内存分配失败。\n");
+        exit(-1);
     }
 
-    printf("Enter user type (0: Admin, 1: Doctor, 2: Patient): ");
-    scanf("%d", &new_user->user_type);
+    displayInput("输入用户类型（0管理 1医生 2患者）", "%d", &new_user->user_type);
 
     // 输入共同字段  
     printf("Enter ID: ");
@@ -104,19 +104,19 @@ USERS* create_user() {
     setbuf(stdin, NULL);
     printf("Enter name: ");
     fgets(new_user->name, sizeof(new_user->name), stdin);
-    new_user->name[strcspn(new_user->name, "\n")] = 0; // 移除fgets读取的换行符  
+    new_user->name[strcspn(new_user->name, "\n")] = 0;
 
     printf("Enter password: ");
     fgets(new_user->password, sizeof(new_user->password), stdin);
-    new_user->password[strcspn(new_user->password, "\n")] = 0; // 移除fgets读取的换行符  
+    new_user->password[strcspn(new_user->password, "\n")] = 0;
 
     printf("Enter phone: ");
     fgets(new_user->phone, sizeof(new_user->phone), stdin);
-    new_user->phone[strcspn(new_user->phone, "\n")] = 0; // 移除fgets读取的换行符  
+    new_user->phone[strcspn(new_user->phone, "\n")] = 0;
 
     printf("Enter sex: ");
     fgets(new_user->sex, sizeof(new_user->sex), stdin);
-    new_user->sex[strcspn(new_user->sex, "\n")] = 0; // 移除fgets读取的换行符  
+    new_user->sex[strcspn(new_user->sex, "\n")] = 0;
     printf("Enter birth year: ");
     scanf("%d", &new_user->birth.year);
     printf("Enter birth month: ");
@@ -138,20 +138,17 @@ USERS* create_user() {
 
     return new_user;
 }
+
 void add_user(USERS* new_user) {
     if (user_head == NULL) {
         user_head = new_user;
         new_user->next = NULL;
     } else {
-        /*        USERS* temp = user_head;
-                while (temp->next != NULL) {
-                    temp = temp->next;
-                }
-                temp->next = new_user;  */
         new_user->next = user_head;
         user_head = new_user;
     }
 }
+
 int read_user_data() {
     FILE* fp = fopen("storage\\user.txt", "r");
     if (fp == NULL) {
@@ -170,41 +167,47 @@ int read_user_data() {
         }
 
         if (new_user->user_type == 1) {
-            fscanf(fp, "%lld %19s %99s %99s %99s %99s %19s %d %d %d",
+            fscanf(fp, "%lld %19s %99s %99s %99s %99s %32s %d %d %d",
                 &new_user->id, new_user->name, new_user->department,
-                new_user->title, new_user->phone, new_user->sex
-                , new_user->password, &new_user->birth.year, &new_user->birth.month,
+                new_user->title, new_user->phone, new_user->sex,
+                new_user->password, &new_user->birth.year, &new_user->birth.month,
                 &new_user->birth.date);
-
         } else {
-            fscanf(fp, "%lld %19s %99s %99s %99s %d %d %d", &new_user->id, new_user->name, new_user->password,
-                new_user->phone, new_user->sex, &new_user->birth.year,
-                &new_user->birth.month, &new_user->birth.date);
+            fscanf(fp, "%lld %19s %32s %99s %99s %d %d %d", &new_user->id,
+                new_user->name, new_user->password, new_user->phone, new_user->sex,
+                &new_user->birth.year, &new_user->birth.month, &new_user->birth.date);
         }
         add_user(new_user);
     }
 }
 
-int login() {
+USERS* login() {
     long long input_id;
-    char input_password[100];
+    char input_password[100], encrypt_password[33];
 
-    printf("请输入用户ID: ");
-    scanf("%lld", &input_id);
-    printf("请输入密码: ");
-    scanf("%99s", input_password);
+    if (user_head == NULL) {
+        read_user_data();
+    }
+    displayInput("请输入账户名", "%lld", &input_id);
+    displayInputPassword("请输入密码", input_password, 100);
+    encryptPassword(input_password, encrypt_password);
 
     USERS* temp = user_head;
     while (temp != NULL) {
-        if (temp->id == input_id && strcmp(temp->password, input_password) == 0) {
-            printf("登录成功!\n");
-            return 1;
+        if (temp->id == input_id) {
+            if (strcmp(temp->password, encrypt_password) == 0) {
+                printf("登录成功，欢迎 %s。\n", temp->name);
+                return temp;
+            } else {
+                printf(Red("登录失败：")"密码错误。\n");
+                return NULL;
+            }
         }
         temp = temp->next;
     }
 
-    printf("用户名或密码错误!\n");
-    return 0;
+    printf(Red("登录失败：")"用户 %lld 不存在。\n", input_id);
+    return NULL;
 }
 
 
@@ -216,6 +219,7 @@ void free_users() {
         free(temp);
     }
 }
+
 USERS* find_user_by_id(long long input_id) {
     USERS* temp = user_head;
     while (temp != NULL) {
@@ -266,8 +270,7 @@ int delete_user(long long input_id) {
 }
 
 int user_main() {
-    user_head = NULL;
-    create_data();
+    // create_data();
     read_user_data();
     int choice;
     USERS* new_user = NULL;
@@ -286,16 +289,14 @@ int user_main() {
             add_user(new_user);
             break;
         case 2:
-
             long long id_to_find;
+            USERS* user;
             printf(Yellow("请输入要查找的用户ID: "));
             scanf("%lld", &id_to_find);
-
             user = find_user_by_id(id_to_find);
             if (user != NULL) {
                 display_user_info(user);
             }
-            free_users();
             break;
         case 3:
             login();
@@ -309,7 +310,7 @@ int user_main() {
             }
             break;
         case 5:
-            printf(Red("退出程序 \n"));
+            printf(Red("退出程序\n"));
             return 0;
         default:
             printf(Red("Invalid choice, please try again.\n"));

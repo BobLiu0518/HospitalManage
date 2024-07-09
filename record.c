@@ -36,7 +36,7 @@ int loadRecordData() {
         }
         fseek(fpContent, 0, SEEK_END);
         length = ftell(fpContent);
-        fseek(fpContent, 0, SEEK_SET);
+        rewind(fpContent);
         if (length) {
             fread(newRecord.content, 1, length, fpContent);
         }

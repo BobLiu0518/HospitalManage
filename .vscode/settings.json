@@ -10,6 +10,8 @@
         "timetools.h": "c",
         "registration.h": "c",
         "filetools.h": "c",
-        "bed.h": "c"
+        "bed.h": "c",
+        "beautifuldisplay.h": "c",
+        "md5.h": "c"
     }
 }

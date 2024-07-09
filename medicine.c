@@ -2,27 +2,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include "medicine.h"
+#include "beautifulDisplay.h"
 
 Medicine* medicineHead = NULL;
 
 // 录入药品
 void addMedicine() {
     Medicine* newMedicine = (Medicine*)malloc(sizeof(Medicine));
-    newMedicine->stock = -1;//初始化
-    printf("Enter full name of medicine: ");
-    scanf("%s", newMedicine->fullName);
-    printf("Enter abbreviation of medicine: ");
-    scanf("%s", newMedicine->abbreviation);
-    printf("Enter stock quantity: ");
-    scanf("%d", &newMedicine->stock);
-    if (newMedicine->stock < 0)
+    newMedicine->stock = -1; // 初始化
+    displayInput("输入药品全名", "%s", newMedicine->fullName);
+    // printf("Enter full name of medicine: ");
+    // scanf("%s", newMedicine->fullName);
+    displayInput("输入药品缩写", "%s", newMedicine->abbreviation);
+    // printf("Enter abbreviation of medicine: ");
+    // scanf("%s", newMedicine->abbreviation);
+    displayInput("输入药品库存", "%d", &newMedicine->stock);
+    // printf("Enter stock quantity: ");
+    // scanf("%d", &newMedicine->stock);
+    if (newMedicine->stock < 0) {
         printf("Invalid choice. Please try again.\n");
-    else {
+    } else {
         newMedicine->next = medicineHead;
         medicineHead = newMedicine;
         printf("Medicine added successfully!\n");
     }
 }
+
 // 查看所有药品
 void viewMedicine() {
     Medicine* current = medicineHead;
@@ -74,6 +79,7 @@ int ModifyStock(char abbr[ ], int quantity) {
     printf("Medicine not found!\n");
     return -2;
 }
+
 void deleteMedicine() {
     char abbr[20];
     printf("Enter abbreviation of medicine to delete: ");
@@ -95,7 +101,6 @@ void deleteMedicine() {
     }
     printf("Medicine not found!\n");
 }
-
 
 void exportMedicine() {
     FILE* fp = fopen("storage\\MedicineList.txt", "w");

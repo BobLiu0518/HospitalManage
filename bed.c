@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include "bed.h"
+#include "beautifulDisplay.h"
+#include "033.h"
 
 Zone zones[MAX_ZONES];
 
@@ -19,8 +21,8 @@ void initializeZones() {
 void saveZonesToFile(const char* filename) {
     FILE* file = fopen(filename, "w");
     if (!file) {
-        perror("Error opening file");
-        exit(EXIT_FAILURE);
+        printf(Red("´íÎó£º")"´ò¿ª %s Ê§°Ü¡£\n", filename);
+        exit(-1);
     }
     for (int i = 0; i < MAX_ZONES; i++) {
         fprintf(file, "%s\n", zones[i].zoneName);
@@ -34,8 +36,8 @@ void saveZonesToFile(const char* filename) {
 void loadZonesFromFile(const char* filename) {
     FILE* file = fopen(filename, "r");
     if (!file) {
-        perror("Error opening file");
-        exit(EXIT_FAILURE);
+        printf(Red("´íÎó£º")"´ò¿ª %s Ê§°Ü¡£\n", filename);
+        exit(-1);
     }
     char zoneName[50];
     int bedNumber, status;
@@ -61,8 +63,8 @@ void recordOccupancy(const char* patientName, const char* admissionDate, int zon
 
     FILE* file = fopen("storage\\BedList.txt", "a");
     if (!file) {
-        perror("Error opening BedList.txt");
-        exit(EXIT_FAILURE);
+        printf(Red("´íÎó£º")"´ò¿ª storage\\BedList.txt Ê§°Ü¡£\n");
+        exit(-1);
     }
     fprintf(file, "Patient: %s, Admission Date: %s, Zone: %d, Bed: %d\n",
         record.patientName, record.admissionDate, record.zoneIndex + 1, record.bedNumber);
@@ -131,7 +133,7 @@ int bedMain() {
             printf("Enter zone index: ");
             scanf("%d", &zoneIndex);
             if (zoneIndex > MAX_ZONES || zoneIndex < 1) {
-                printf("Invaild zone.( Numbers from 1-5 are acceptable.)\n");
+                printf("Invalid zone.( Numbers from 1-5 are acceptable.)\n");
                 break;
             } else {
                 getchar(); // Consume newline left in stdin buffer
@@ -149,7 +151,7 @@ int bedMain() {
                     }
                     break;
                 } else
-                    printf("Invaild bed.( Numbers from 1-10 are acceptable.)\n");
+                    printf("Invalid bed.( Numbers from 1-10 are acceptable.)\n");
                 break;
             }
         }
@@ -188,7 +190,7 @@ int bedMain() {
             }
 
             if (deleteOccupancy(zoneIndex - 1, bedNumber) == -1) {
-                printf("No exisiting occupancy there.\n");
+                printf("No existing occupancy there.\n");
             }
             break;
         }

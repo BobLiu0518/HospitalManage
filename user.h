@@ -10,7 +10,7 @@ typedef struct users {
     int user_type; // 0管理员 1医生 2患者  
     long long id;
     char name[20];
-    char password[100];
+    char password[33];
     char phone[100];
     char department[100]; // 若非医生则不填  
     char title[100];      // 若非医生则不填  
@@ -23,7 +23,7 @@ void create_data();
 USERS* create_user();
 void add_user(USERS* new_user);
 int read_user_data();
-int login();
+USERS* login();
 void free_users();
 USERS* find_user_by_id(long long input_id);
 void display_user_info(USERS* user);
