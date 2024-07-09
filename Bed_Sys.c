@@ -93,10 +93,11 @@ void recordOccupancy(const char *patientName, const char *admissionDate, int zon
     zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_OCCUPIED;
 }
 
+
 int deleteOccupancy(int zoneIndex, int bedNumber) {
     // 更新内存中的床位状态
     if (zoneIndex >= 0 && zoneIndex < MAX_ZONES && bedNumber >= 1 && bedNumber <= MAX_BEDS_PER_ZONE) {
-        if (zones[zoneIndex - 1].beds[bedNumber - 1].status == BED_STATUS_OCCUPIED)
+        if (zones[zoneIndex].beds[bedNumber - 1].status == BED_STATUS_OCCUPIED)
         {
         zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_EMPTY;
         printf("Bed %d in Zone %d is now marked as empty.\n", bedNumber, zoneIndex + 1);
@@ -222,16 +223,18 @@ int main() {
                 }
             break;
             }
-        default:
-            printf("Invalid choice. Please try again.\n");
-            case 4:
+             case 4:
                 printf("Exiting...\n");
                 break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+
         }
         setbuf(stdin,NULL);
-    } while (choice != 3);
+    } while (choice != 4);
 
     // Save the current bed statuses before exiting
     saveZonesToFile("BedInfo.txt");
+
     return 0;
 }
