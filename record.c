@@ -172,6 +172,8 @@ int checkHistoryRecord(long long patientId) {
         printRecord(historyRecord[selection].recordId);
         system("pause > nul");
     }
+
+    free(recordTitle);
 }
 
 // int main() {
