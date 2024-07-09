@@ -85,7 +85,7 @@ void recordOccupancy(const char *patientName, const char *admissionDate, int zon
         perror("Error opening BedList.txt");
         exit(EXIT_FAILURE);
     }
-    fprintf(file, "Patient: %[^,], Admission Date: %[^,], Zone: %d, Bed: %d\n",
+    fprintf(file, "Patient: %s, Admission Date: %s, Zone: %d, Bed: %d\n",
     record.patientName, record.admissionDate, record.zoneIndex + 1, record.bedNumber);
     fclose(file);
 
@@ -96,7 +96,7 @@ void recordOccupancy(const char *patientName, const char *admissionDate, int zon
 int deleteOccupancy(int zoneIndex, int bedNumber) {
     // 更新内存中的床位状态
     if (zoneIndex >= 0 && zoneIndex < MAX_ZONES && bedNumber >= 1 && bedNumber <= MAX_BEDS_PER_ZONE) {
-        if (zones[zoneIndex - 1].beds[bedNumber - 1].status != BED_STATUS_EMPTY)
+        if (zones[zoneIndex - 1].beds[bedNumber - 1].status == BED_STATUS_OCCUPIED)
         {
         zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_EMPTY;
         printf("Bed %d in Zone %d is now marked as empty.\n", bedNumber, zoneIndex + 1);
@@ -228,10 +228,10 @@ int main() {
                 printf("Exiting...\n");
                 break;
         }
+        setbuf(stdin,NULL);
     } while (choice != 3);
 
     // Save the current bed statuses before exiting
     saveZonesToFile("BedInfo.txt");
-
     return 0;
 }
