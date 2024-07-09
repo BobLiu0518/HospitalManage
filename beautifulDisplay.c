@@ -96,7 +96,11 @@ int displaySelect(char* prompt, int count, ...) {
     va_list argList;
     char** options;
     va_start(argList, count);
-    if (count < 0) {
+
+    if (!count) {
+        printf("无可选项\n");
+        return -1;
+    } else if (count < 0) {
         count = -count;
         memoryAllocated = 1;
         options = calloc(count, sizeof(char*));
