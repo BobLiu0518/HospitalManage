@@ -35,7 +35,10 @@ int loadRecordData() {
     }
     initDynamicArray(&records, 128, sizeof(Record));
     while (!feof(fpRecord)) {
-        fscanf(fpRecord, "%lu,%[^,],%lld,%lld\n", &newRecord.recordId, datetime, &newRecord.patientId, &newRecord.doctorId);
+        length = fscanf(fpRecord, "%lu,%[^,],%lld,%lld\n", &newRecord.recordId, datetime, &newRecord.patientId, &newRecord.doctorId);
+        if (length == EOF) {
+            break;
+        }
         sscanf(datetime, "%4u%2u%2u%2u%2u", &newRecord.datetime.year, &newRecord.datetime.month,
             &newRecord.datetime.day, &newRecord.datetime.hour, &newRecord.datetime.minute);
         sprintf(filename, "storage\\record\\%010lu.txt", newRecord.recordId);
@@ -175,11 +178,3 @@ int checkHistoryRecord(long long patientId) {
 
     free(recordTitle);
 }
-
-// int main() {
-//     system("chcp 936 > nul");
-//     loadRecordData();
-//     appendRecord(114514);
-//     checkHistoryRecord(99999);
-//     system("pause > nul");
-// }
