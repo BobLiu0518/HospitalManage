@@ -85,13 +85,30 @@ void recordOccupancy(const char *patientName, const char *admissionDate, int zon
         perror("Error opening BedList.txt");
         exit(EXIT_FAILURE);
     }
-    fprintf(file, "Patient: %s, Admission Date: %s, Zone: %d, Bed: %d\n",
-            record.patientName, record.admissionDate, record.zoneIndex + 1, record.bedNumber);
+    fprintf(file, "Patient: %[^,], Admission Date: %[^,], Zone: %d, Bed: %d\n",
+    record.patientName, record.admissionDate, record.zoneIndex + 1, record.bedNumber);
     fclose(file);
 
     // Update bed status in memory
     zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_OCCUPIED;
 }
+
+int deleteOccupancy(int zoneIndex, int bedNumber) {
+    // 更新内存中的床位状态
+    if (zoneIndex >= 0 && zoneIndex < MAX_ZONES && bedNumber >= 1 && bedNumber <= MAX_BEDS_PER_ZONE) {
+        if (zones[zoneIndex - 1].beds[bedNumber - 1].status != BED_STATUS_EMPTY)
+        {
+        zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_EMPTY;
+        printf("Bed %d in Zone %d is now marked as empty.\n", bedNumber, zoneIndex + 1);
+        return 0; // 成功时返回0
+        }
+        else
+        return -1; // 查无此人时返回-1
+    } else {
+        return -2; // 全失败时返回-2
+    }
+}
+
 
 int main() {
     // Load bed information from file if it exists
@@ -110,7 +127,8 @@ int main() {
         printf("\nWelcome to Bed Management System!\n");
         printf("1. Record a new occupancy\n");
         printf("2. View bed occupancy records\n");
-        printf("3. Exit\n");
+        printf("3. Delete an existing occupancy\n");
+        printf("4. Exit\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
         getchar(); // Consume newline left in stdin buffer
@@ -179,11 +197,36 @@ int main() {
                 }
                 break;
             }
-            case 3:
+            case 3: {
+            int zoneIndex, bedNumber;
+
+            printf("Enter zone index to delete occupancy (1-%d): ", MAX_ZONES);
+            scanf("%d", &zoneIndex);
+            getchar();
+
+            if (zoneIndex < 1 || zoneIndex > MAX_ZONES) {
+                printf("Invalid zone index.\n");
+                break;
+                }
+
+                printf("Enter bed number to delete occupancy (1-%d): ", MAX_BEDS_PER_ZONE);
+                scanf("%d", &bedNumber);
+
+            if (bedNumber < 1 || bedNumber > MAX_BEDS_PER_ZONE) {
+                printf("Invalid bed number.\n");
+                break;
+                }
+
+            if (deleteOccupancy(zoneIndex - 1, bedNumber)==-1) {
+                printf("No exisiting occupancy there.\n");
+                }
+            break;
+            }
+        default:
+            printf("Invalid choice. Please try again.\n");
+            case 4:
                 printf("Exiting...\n");
                 break;
-            default:
-                printf("Invalid choice. Please try again.\n");
         }
     } while (choice != 3);
 
