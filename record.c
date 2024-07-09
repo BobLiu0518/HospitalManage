@@ -4,8 +4,11 @@
 #include "dynamicArray.h"
 #include "fileTools.h"
 #include "timeTools.h"
-#include "consts.h"
 #include "033.h"
+
+#define RECORD_CONTENT_LENGTH 1000
+#define RECORD_FILENAME_LENGTH 100
+#define RECORD_TITLE_LENGTH 40
 
 typedef struct record {
     unsigned long recordId;
@@ -171,10 +174,10 @@ int checkHistoryRecord(long long patientId) {
     }
 }
 
-int main() {
-    system("chcp 936 > nul");
-    loadRecordData();
-    appendRecord(114514);
-    checkHistoryRecord(99999);
-    system("pause > nul");
-}
+// int main() {
+//     system("chcp 936 > nul");
+//     loadRecordData();
+//     appendRecord(114514);
+//     checkHistoryRecord(99999);
+//     system("pause > nul");
+// }
