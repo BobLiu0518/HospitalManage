@@ -102,6 +102,7 @@ int selectBed(int* zoneIndex, int* bedNumber) {
     if (i == -1) {
         return -1;
     }
+    displayTitle("Ñ¡Ôñ²¡´²");
     printf("[%s] %s ¹²%d´²Î» (1~%d)\n", zones[*zoneIndex].zoneName, zones[*zoneIndex].department,
         zones[*zoneIndex].bedsCount, zones[*zoneIndex].bedsCount);
     displayInput("Ñ¡Ôñ²¡´²", "%d", bedNumber);

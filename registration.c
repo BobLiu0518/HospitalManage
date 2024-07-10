@@ -151,6 +151,7 @@ unsigned addClinicTime(long long doctorId) {
     if (weekday == -1) {
         return -1;
     }
+    displayTitle("设置坐诊时间");
     displayInput("请输入开始时间", "%s", temp);
     sscanf(temp, "%u%c%u", &startTime.hour, &trash, &startTime.minute);
     displayInput("请输入结束时间", "%s", temp);
@@ -181,6 +182,7 @@ int editClinicTime(unsigned clinicTimeId, char* title) {
     ClinicTime* clinicTime = getItem(&clinicTimes, clinicTimeId);
     selection = displaySelect(title, -3, "更改接诊数量", clinicTime->status == valid ? "设置为关闭" : "设置为开放", "取消");
     if (selection == 0) {
+        displayTitle("更改接诊数量");
         displayInput("请输入接诊数量", "%u", &clinicTime->maxAmount);
         printf("修改成功。\n");
         system("pause > nul");
@@ -435,6 +437,7 @@ int assignRegistration(unsigned patientId) {
     char temp[15], trash;
     unsigned clinicTimeId;
     Datetime datetime;
+    displayTitle("挂号");
     displayInput("请输入挂号日期", "%s", temp);
     sscanf(temp, "%u%c%u%c%u", &datetime.year, &trash, &datetime.month, &trash, &datetime.day);
     printf("请选择挂号医生和时段：\n");
@@ -442,6 +445,7 @@ int assignRegistration(unsigned patientId) {
     if (clinicTimeId == -1) {
         return -1;
     }
+    displayTitle("挂号");
     displayInput("请输入预约时间", "%s", temp);
     sscanf(temp, "%u%c%u", &datetime.hour, &trash, &datetime.minute);
     appendRegistration(patientId, clinicTimeId, datetime);

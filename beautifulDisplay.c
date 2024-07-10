@@ -103,6 +103,7 @@ int displaySelect(char* prompt, int count, ...) {
 
     if (!count) {
         printf("无可选项\n");
+        system("pause > nul");
         return -1;
     } else if (count < 0) {
         count = -count;

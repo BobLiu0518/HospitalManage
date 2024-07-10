@@ -37,7 +37,7 @@ void adminMain() {
 void doctorMain() {
     int selection;
     while (1) {
-        selection = displaySelect("欢迎使用医生系统", -4, "门诊坐诊时间管理", "查看患者信息", "填写病历", "退出登录");
+        selection = displaySelect("欢迎使用医生系统", -4, "门诊坐诊时间管理", "查询患者信息", "填写病历", "退出登录");
         switch (selection) {
         case -1:
         case 3:
@@ -47,6 +47,7 @@ void doctorMain() {
             break;
         case 1:
             long long id;
+            displayTitle("查询患者信息");
             displayInput("输入患者就诊卡号", "%lld", &id);
             USERS* patient = find_user_by_id(id);
             if (!patient || patient->user_type != 2) {

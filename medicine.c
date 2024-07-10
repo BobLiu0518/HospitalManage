@@ -78,7 +78,8 @@ Medicine* getMedicine(char abbr[ ]) {
 
 void addMedicine() {
     Medicine* newMedicine = (Medicine*)malloc(sizeof(Medicine));
-    newMedicine->stock = -1; // 初始化
+    newMedicine->stock = -1;
+    displayTitle("添加药品");
     displayInput("输入药品全名", "%[^\n]", newMedicine->fullName);
     displayInput("输入药品缩写", "%s", newMedicine->abbreviation);
     displayInput("输入药品库存", "%d", &newMedicine->stock);
@@ -94,6 +95,7 @@ void addMedicine() {
 
 void viewMedicine() {
     Medicine* current = medicineHead;
+    displayTitle("药品信息");
     if (current == NULL) {
         printf("药品信息为空。\n");
         return;
@@ -107,6 +109,7 @@ void viewMedicine() {
 
 void updateMedicine() {
     char abbr[20];
+    displayTitle("修改库存");
     displayInput("输入药品缩写", "%s", abbr);
     Medicine* medicine = getMedicine(abbr);
     if (medicine == NULL) {
@@ -137,6 +140,7 @@ int ModifyStock(char abbr[ ], int quantity) {
 
 void deleteMedicine() {
     char abbr[20];
+    displayTitle("删除药品");
     displayInput("输入药品缩写", "%s", abbr);
     Medicine* current = medicineHead, * prev = NULL;
     while (current != NULL) {

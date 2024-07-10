@@ -174,6 +174,7 @@ int create_user(int is_admin) {
         new_user->user_type = 2;
     }
 
+    displayTitle(is_admin ? "添加新用户" : "注册账号");
     if (new_user->user_type == 2) {
         displayInput("输入就诊卡号", "%lld", &new_user->id);
     } else {
@@ -214,6 +215,7 @@ int create_user(int is_admin) {
         return -1;
     }
     strcpy(new_user->sex, sex == 0 ? "男" : "女");
+    displayTitle(is_admin ? "添加新用户" : "注册账号");
     displayInput("输入出生年份", "%d", &new_user->birth.year);
     displayInput("输入出生月份", "%d", &new_user->birth.month);
     displayInput("输入出生日期", "%d", &new_user->birth.date);
@@ -237,6 +239,7 @@ int create_user(int is_admin) {
     }
     new_user->next = NULL;
 
+    displayTitle(is_admin ? "添加新用户" : "注册账号");
     if (is_admin) {
         printf("添加新用户成功。\n");
     } else {
@@ -269,6 +272,7 @@ USERS* login() {
     if (user_head == NULL) {
         read_user_data();
     }
+    displayTitle("登录");
     displayInput("请输入账户名", "%lld", &input_id);
     displayInputPassword("请输入密码", input_password, 100);
     encryptPassword(input_password, encrypt_password);
@@ -315,6 +319,7 @@ USERS* find_user_by_id(long long input_id) {
 }
 
 void display_user_info(USERS* user) {
+    displayTitle("用户信息");
     if (user == NULL) {
         printf("未找到用户\n");
         return;
@@ -365,6 +370,7 @@ int user_main(USERS* current) {
         case 1:
             long long id_to_find;
             USERS* user;
+            displayTitle("查找用户");
             displayInput("输入要查找的用户ID", "%lld", &id_to_find);
             user = find_user_by_id(id_to_find);
             if (user != NULL) {
@@ -375,6 +381,7 @@ int user_main(USERS* current) {
             break;
         case 2:
             long long id_to_delete;
+            displayTitle("删除用户");
             displayInput("输入要删除的用户ID", "%lld", &id_to_delete);
             if (id_to_delete == current->id) {
                 printf("无法删除当前登录的用户。\n");
