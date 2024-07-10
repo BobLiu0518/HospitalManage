@@ -16,5 +16,6 @@
         "user.h": "c",
         "033.h": "c",
         "medicine.h": "c"
-    }
+    },
+    "cSpell.words": ["figlet"]
 }
