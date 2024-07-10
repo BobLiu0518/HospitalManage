@@ -139,7 +139,11 @@ int displaySelect(char* prompt, int count, ...) {
         // 处理按键
         input = getch();
         if (input >= '1' && input <= '9' && input - '1' < count) {
-            selection = input - '1';
+            if (selection == input - '1') {
+                break;
+            } else {
+                selection = input - '1';
+            }
         } else if (input == 72 /* 上箭头 */ || input == 'w' || input == 'W') {
             selection = (selection + count - 1) % count;
         } else if (input == 80 /* 下箭头 */ || input == 9 /* Tab */ || input == 's' || input == 'S') {
