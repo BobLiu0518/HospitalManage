@@ -1,136 +1,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "033.h"
 #include "medicine.h"
 #include "beautifulDisplay.h"
 
 Medicine* medicineHead = NULL;
 
-// 录入药品
-void addMedicine() {
-    Medicine* newMedicine = (Medicine*)malloc(sizeof(Medicine));
-    newMedicine->stock = -1; // 初始化
-    displayInput("输入药品全名", "%s", newMedicine->fullName);
-    // printf("Enter full name of medicine: ");
-    // scanf("%s", newMedicine->fullName);
-    displayInput("输入药品缩写", "%s", newMedicine->abbreviation);
-    // printf("Enter abbreviation of medicine: ");
-    // scanf("%s", newMedicine->abbreviation);
-    displayInput("输入药品库存", "%d", &newMedicine->stock);
-    // printf("Enter stock quantity: ");
-    // scanf("%d", &newMedicine->stock);
-    if (newMedicine->stock < 0) {
-        printf("Invalid choice. Please try again.\n");
-    } else {
-        newMedicine->next = medicineHead;
-        medicineHead = newMedicine;
-        printf("Medicine added successfully!\n");
-    }
-}
-
-// 查看所有药品
-void viewMedicine() {
-    Medicine* current = medicineHead;
-    if (current == NULL) {
-        printf("No medicines recorded.\n");
-        return;
-    }
-    printf("List of Medicines:\n");
+void freeMedicine() {
+    Medicine* current = medicineHead, * temp;
     while (current != NULL) {
-        printf("Full Name: %s, Abbreviation: %s, Stock: %d\n", current->fullName, current->abbreviation, current->stock);
+        temp = current;
         current = current->next;
+        free(temp);
     }
-}
-
-// 修改药品库存
-void updateMedicine() {
-    char abbr[20];
-    printf("Enter abbreviation of medicine to update: ");
-    scanf("%s", abbr);
-    Medicine* current = medicineHead;
-    while (current != NULL) {
-        if (strcmp(current->abbreviation, abbr) == 0) {
-            printf("Enter new stock quantity: ");
-            scanf("%d", &current->stock);
-            printf("Stock updated successfully!\n");
-            return;
-        }
-        current = current->next;
-    }
-    printf("Medicine not found!\n");
-}
-
-// 减少药品库存
-int ModifyStock(char abbr[ ], int quantity) {
-    Medicine* current = medicineHead;
-    while (current != NULL) {
-        if (strcmp(current->abbreviation, abbr) == 0) {
-            if (current->stock >= quantity) {
-                current->stock += quantity;
-                printf("Stock modified successfully!\n");
-                return 0;
-            } else {
-                printf("Not enough stock!\n");
-                return -1;
-            }
-        }
-        current = current->next;
-    }
-    printf("Medicine not found!\n");
-    return -2;
-}
-
-void deleteMedicine() {
-    char abbr[20];
-    printf("Enter abbreviation of medicine to delete: ");
-    scanf("%s", abbr);
-    Medicine* current = medicineHead, * prev = NULL;
-    while (current != NULL) {
-        if (strcmp(current->abbreviation, abbr) == 0) {
-            if (prev == NULL) {
-                medicineHead = current->next;
-            } else {
-                prev->next = current->next;
-            }
-            free(current);
-            printf("Medicine deleted successfully!\n");
-            return;
-        }
-        prev = current;
-        current = current->next;
-    }
-    printf("Medicine not found!\n");
 }
 
 void exportMedicine() {
     FILE* fp = fopen("storage\\MedicineList.txt", "w");
     if (fp == NULL) {
-        printf("Failed to open file.\n");
+        printf(Red("错误：")"打开 storage\\MedicineList.txt 失败。\n");
         return;
     }
 
-    // 保存一个临时指针来遍历链表
     Medicine* current = medicineHead;
     Medicine* temp;
-
-    // 导出数据
     while (current != NULL) {
         fprintf(fp, "Full Name: %s, Abbreviation: %s, Stock: %d\n", current->fullName, current->abbreviation, current->stock);
-        temp = current; // 保存当前节点
-        current = current->next; // 移动到下一个节点
+        temp = current;
+        current = current->next;
     }
 
     fclose(fp);
-    printf("Medicine list exported and cleared successfully!\n");
 }
 
-// 导入药品清单
 void importMedicine() {
     FILE* fp = fopen("storage\\MedicineList.txt", "r");
     Medicine* current;
     if (fp == NULL) {
-        printf("Failed to open file.\n");
+        printf(Red("错误：")"打开 storage\\MedicineList.txt 失败。\n");
         return;
+    }
+    if (medicineHead != NULL) {
+        freeMedicine();
     }
     char fullName[100], abbreviation[20];
     int stock;
@@ -149,40 +61,118 @@ void importMedicine() {
         medicineHead = newMedicine;
     }
     fclose(fp);
-    printf("Medicine list imported successfully!\n");
+}
+
+void addMedicine() {
+    Medicine* newMedicine = (Medicine*)malloc(sizeof(Medicine));
+    newMedicine->stock = -1; // 初始化
+    displayInput("输入药品全名", "%[^\n]", newMedicine->fullName);
+    displayInput("输入药品缩写", "%s", newMedicine->abbreviation);
+    displayInput("输入药品库存", "%d", &newMedicine->stock);
+    if (newMedicine->stock < 0) {
+        printf(Red("错误：")"药品库存不能为负。\n");
+    } else {
+        newMedicine->next = medicineHead;
+        medicineHead = newMedicine;
+        exportMedicine();
+        printf("成功添加药品。\n");
+    }
+}
+
+void viewMedicine() {
+    Medicine* current = medicineHead;
+    if (current == NULL) {
+        printf("药品信息为空。\n");
+        return;
+    }
+    printf("当前药品信息：\n");
+    while (current != NULL) {
+        printf("%s[%s] 库存%d单位\n", current->fullName, current->abbreviation, current->stock);
+        current = current->next;
+    }
+}
+
+void updateMedicine() {
+    char abbr[20];
+    displayInput("输入药品缩写", "%s", abbr);
+    Medicine* current = medicineHead;
+    while (current != NULL) {
+        if (strcmp(current->abbreviation, abbr) == 0) {
+            printf("%s 当前库存：%d\n", current->fullName, current->stock);
+            displayInput("输入新库存数", "%d", &current->stock);
+            exportMedicine();
+            printf("修改库存数成功。\n");
+            return;
+        }
+        current = current->next;
+    }
+    printf(Red("错误：")"未找到药品 %s。\n", abbr);
+}
+
+int ModifyStock(char abbr[ ], int quantity) {
+    Medicine* current = medicineHead;
+    while (current != NULL) {
+        if (strcmp(current->abbreviation, abbr) == 0) {
+            if (current->stock >= quantity) {
+                current->stock -= quantity;
+                exportMedicine();
+                return 0;
+            } else {
+                printf(Red("错误：")"药品库存不足。\n");
+                return -1;
+            }
+        }
+        current = current->next;
+    }
+    printf(Red("错误：")"未找到药品 %s。\n", abbr);
+    return -2;
+}
+
+void deleteMedicine() {
+    char abbr[20];
+    displayInput("输入药品缩写", "%s", abbr);
+    Medicine* current = medicineHead, * prev = NULL;
+    while (current != NULL) {
+        if (strcmp(current->abbreviation, abbr) == 0) {
+            if (prev == NULL) {
+                medicineHead = current->next;
+            } else {
+                prev->next = current->next;
+            }
+            free(current);
+            exportMedicine();
+            printf("成功删除药品。\n");
+            return;
+        }
+        prev = current;
+        current = current->next;
+    }
+    printf(Red("错误：")"未找到药品 %s。\n", abbr);
 }
 
 int medicineMain() {
-    char choice;
+    int choice;
+    importMedicine();
     while (1) {
-        printf("Welcome to Medicine Management System!\n");
-        printf("\n1. Add Medicine\n2. View Medicine\n3. Update Medicine Stock(admin)\n4. Delete Medicine\n5. Export Medicine List\n6. Import Medicine List\n7. Exit\nEnter your choice: ");
-        scanf("%c", &choice);
+        choice = displaySelect("[管理员] 药品管理", -5, "添加新药品", "查看药品库存", "更新药品库存", "删除药品", "退出药品管理");
         switch (choice) {
-        case '1':
+        case 0:
             addMedicine();
             break;
-        case '2':
+        case 1:
             viewMedicine();
             break;
-        case '3':
+        case 2:
             updateMedicine();
             break;
-        case '4':
+        case 3:
             deleteMedicine();
             break;
-        case '5':
-            exportMedicine();
-            break;
-        case '6':
-            importMedicine();
-            break;
-        case '7':
-            exit(0);
-        default:
-            printf("Invalid choice. Please try again.\n");
+        case -1:
+        case 4:
+            freeMedicine();
+            return 0;
         }
-        setbuf(stdin, NULL);
+        system("pause > nul");
     }
-    return 0;
 }

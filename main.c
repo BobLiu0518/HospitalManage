@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "033.h"
 #include "beautifulDisplay.h"
 #include "bed.h"
 #include "medicine.h"
@@ -9,7 +10,7 @@
 
 USERS* currentUser = NULL;
 
-void adminMain(USERS* currentUser) {
+void adminMain() {
     int selection;
     while (1) {
         selection = displaySelect("欢迎使用管理员系统", -5, "用户管理", "挂号管理", "药品管理", "病床管理", "退出登录");
@@ -21,24 +22,41 @@ void adminMain(USERS* currentUser) {
             user_main(currentUser);
             break;
         case 1:
+            // TODO
+        case 2:
             medicineMain();
             break;
-        case 2:
+        case 3:
             bedMain();
             break;
         }
-        system("pause > nul");
     }
 }
 
 void doctorMain() {
     int selection;
     while (1) {
-        selection = displaySelect("欢迎使用医生系统", -5, "设置门诊坐诊时间", "查看患者信息", "添加病历、开药", "分配病房", "退出登录");
+        selection = displaySelect("欢迎使用医生系统", -5, "设置门诊坐诊时间", "查看患者信息", "填写病历", "退出登录");
         switch (selection) {
         case -1:
-        case 4:
+        case 3:
             return;
+        case 0:
+            addClinicTime(currentUser->id);
+            break;
+        case 1:
+            long long id;
+            displayInput("输入患者就诊卡号", "%lld", &id);
+            USERS* patient = find_user_by_id(id);
+            if (!patient || patient->user_type != 2) {
+                printf(Red("错误：")"患者 %lld 不存在。\n", id);
+            } else {
+                display_user_info(patient);
+            }
+            break;
+        case 2:
+            // TODO
+            break;
         }
         system("pause > nul");
     }
@@ -87,7 +105,7 @@ int main() {
             }
             switch (currentUser->user_type) {
             case 0:
-                adminMain(currentUser);
+                adminMain();
                 break;
             case 1:
                 doctorMain();
@@ -102,6 +120,5 @@ int main() {
             create_user(0);
             break;
         }
-        system("pause > nul");
     }
 }
