@@ -25,8 +25,9 @@ int loadClinicTime() {
         return -1;
     }
     while (!feof(fp)) {
-        c = fscanf(fp, "%u,%lld,%d,%2u%2u,%2u%2u,%u,%d\n", &clinicTime.clinicTimeId, &clinicTime.doctorId, &clinicTime.weekday, &clinicTime.startTime.hour,
-            &clinicTime.startTime.minute, &clinicTime.endTime.hour, &clinicTime.endTime.minute, &clinicTime.maxAmount, &clinicTime.status);
+        c = fscanf(fp, "%u,%lld,%d,%2u%2u,%2u%2u,%u,%d\n", &clinicTime.clinicTimeId, &clinicTime.doctorId, &clinicTime.weekday,
+            &clinicTime.startTime.hour, &clinicTime.startTime.minute,
+            &clinicTime.endTime.hour, &clinicTime.endTime.minute, &clinicTime.maxAmount, &clinicTime.status);
         if (c == EOF) {
             break;
         }
@@ -94,8 +95,9 @@ int saveClinicTime() {
     }
     for (i = 0; i < clinicTimes.length; i++) {
         clinicTime = getItem(&clinicTimes, i);
-        fprintf(fp, "%u,%lld,%d,%02u%02u,%02u%02u,%u,%d\n", clinicTime->clinicTimeId, clinicTime->doctorId, clinicTime->weekday, clinicTime->startTime.hour,
-            clinicTime->startTime.minute, clinicTime->endTime.hour, clinicTime->endTime.minute, clinicTime->maxAmount, clinicTime->status);
+        fprintf(fp, "%u,%lld,%d,%02u%02u,%02u%02u,%u,%d\n", clinicTime->clinicTimeId, clinicTime->doctorId, clinicTime->weekday,
+            clinicTime->startTime.hour, clinicTime->startTime.minute, clinicTime->endTime.hour, clinicTime->endTime.minute,
+            clinicTime->maxAmount, clinicTime->status);
     }
     fclose(fp);
     return 0;
@@ -286,7 +288,8 @@ unsigned chooseClinicTime(Datetime datetime) {
         clinicTimeRecord = getClinicTimeRecord(clinicTime->clinicTimeId, datetime);
         doctor = find_user_by_id(clinicTime->doctorId);
         title[i] = calloc(CLINIC_TIME_TITLE_LENGTH, sizeof(char));
-        sprintf(title[i], "%s医生 %02u:%02u~%02u:%02u 余%02d", doctor->name, clinicTime->startTime.hour, clinicTime->startTime.minute,
+        sprintf(title[i], "%s医生 %02u:%02u~%02u:%02u 余%02d", doctor->name,
+            clinicTime->startTime.hour, clinicTime->startTime.minute,
             clinicTime->endTime.hour, clinicTime->endTime.minute, clinicTimeRecord->remainAmount);
     }
     choice = displaySelect("选择挂号时间段：", availableTimesCount, title);
