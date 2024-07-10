@@ -11,6 +11,7 @@
 DynamicArray clinicTimes = { 0 };
 DynamicArray registrations = { 0 };
 DynamicArray clinicTimeRecords = { 0 };
+char* weekdayName[ ] = { "周日", "周一", "周二", "周三", "周四", "周五", "周六" };
 
 int loadClinicTime() {
     if (clinicTimes.ptr) {
@@ -135,7 +136,7 @@ int saveRegistrations() {
     return 0;
 }
 
-int addClinicTime(long long doctorId) {
+unsigned addClinicTime(long long doctorId) {
     if (!clinicTimes.ptr) {
         loadClinicTime();
     }
@@ -144,9 +145,9 @@ int addClinicTime(long long doctorId) {
     unsigned maxAmount;
     char temp[15], trash;
 
-    weekday = displaySelect("选择坐诊日", -7, "周日", "周一", "周二", "周三", "周四", "周五", "周六");
+    weekday = displaySelect("选择坐诊日", 7, weekdayName);
     if (weekday == -1) {
-        return 0;
+        return -1;
     }
     displayInput("请输入开始时间", "%s", temp);
     sscanf(temp, "%u%c%u", &startTime.hour, &trash, &startTime.minute);
@@ -166,7 +167,62 @@ int addClinicTime(long long doctorId) {
     appendItem(&clinicTimes, &clinicTime);
     saveClinicTime();
     printf("添加坐诊时间成功。\n");
+    system("pause > nul");
     return clinicTime.clinicTimeId;
+}
+
+int editClinicTime(unsigned clinicTimeId, char* title) {
+    if (!clinicTimes.ptr) {
+        loadClinicTime();
+    }
+    int selection;
+    ClinicTime* clinicTime = getItem(&clinicTimes, clinicTimeId);
+    selection = displaySelect(title, -3, "更改接诊数量", clinicTime->status == valid ? "设置为关闭" : "设置为开放", "取消");
+    if (selection == 0) {
+        displayInput("请输入接诊数量", "%u", &clinicTime->maxAmount);
+        printf("修改成功。\n");
+        system("pause > nul");
+    } else if (selection == 1) {
+        clinicTime->status = !clinicTime->status;
+        printf("设置成功。\n");
+        system("pause > nul");
+    }
+    saveClinicTime();
+}
+
+int selectClinicTime(long long doctorId) {
+    int i, docClinicTimeCount = 0;
+    char** title;
+    if (!clinicTimes.ptr) {
+        loadClinicTime();
+    }
+    ClinicTime** docClinicTime = calloc(clinicTimes.length, sizeof(ClinicTime*)), * clinicTime;
+    for (i = 0; i < clinicTimes.length; i++) {
+        clinicTime = getItem(&clinicTimes, i);
+        if (clinicTime->doctorId == doctorId) {
+            docClinicTime[docClinicTimeCount] = clinicTime;
+            docClinicTimeCount++;
+        }
+    }
+    title = calloc(docClinicTimeCount + 2, sizeof(char*));
+    for (i = 0; i < docClinicTimeCount; i++) {
+        title[i] = calloc(CLINIC_TIME_TITLE_LENGTH, sizeof(char));
+        sprintf(title[i], "%s %02u:%02u~%02u:%02u 总%03u %s", weekdayName[docClinicTime[i]->weekday],
+            docClinicTime[i]->startTime.hour, docClinicTime[i]->startTime.minute,
+            docClinicTime[i]->endTime.hour, docClinicTime[i]->endTime.minute,
+            docClinicTime[i]->maxAmount, docClinicTime[i]->status == valid ? "开放" : "关闭");
+    }
+    title[docClinicTimeCount] = "新增坐诊时间";
+    title[docClinicTimeCount + 1] = "退出坐诊时间管理";
+    i = displaySelect("选择坐诊时间", docClinicTimeCount + 2, title);
+    if (i == docClinicTimeCount) {
+        addClinicTime(doctorId);
+    } else if (i != -1 && i != docClinicTimeCount + 1) {
+        editClinicTime(docClinicTime[i]->clinicTimeId, title[i]);
+    }
+    free(title);
+    free(docClinicTime);
+    return 0;
 }
 
 int setClinicTimeStatus(unsigned clinicTimeId, Status status) {
@@ -202,7 +258,7 @@ ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime) 
     return getItem(&clinicTimeRecords, clinicTimeRecords.length - 1);
 }
 
-unsigned selectClinicTime(Datetime datetime) {
+unsigned chooseClinicTime(Datetime datetime) {
     int i, availableTimesCount = 0, choice;
     char** title = NULL;
     USERS* doctor;
@@ -305,7 +361,7 @@ int assignRegistration(unsigned patientId) {
     displayInput("请输入挂号日期", "%s", temp);
     sscanf(temp, "%u%c%u%c%u", &datetime.year, &trash, &datetime.month, &trash, &datetime.day);
     printf("请选择挂号医生和时段：\n");
-    clinicTimeId = selectClinicTime(datetime);
+    clinicTimeId = chooseClinicTime(datetime);
     if (clinicTimeId == -1) {
         return -1;
     }

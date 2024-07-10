@@ -36,13 +36,13 @@ void adminMain() {
 void doctorMain() {
     int selection;
     while (1) {
-        selection = displaySelect("欢迎使用医生系统", -5, "设置门诊坐诊时间", "查看患者信息", "填写病历", "退出登录");
+        selection = displaySelect("欢迎使用医生系统", -4, "门诊坐诊时间管理", "查看患者信息", "填写病历", "退出登录");
         switch (selection) {
         case -1:
         case 3:
             return;
         case 0:
-            addClinicTime(currentUser->id);
+            selectClinicTime(currentUser->id);
             break;
         case 1:
             long long id;
@@ -53,12 +53,12 @@ void doctorMain() {
             } else {
                 display_user_info(patient);
             }
+            system("pause > nul");
             break;
         case 2:
             // TODO
             break;
         }
-        system("pause > nul");
     }
 }
 
