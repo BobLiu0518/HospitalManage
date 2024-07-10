@@ -222,6 +222,10 @@ int manageClinicTime(long long doctorId) {
     } else if (i != -1 && i != docClinicTimeCount + 1) {
         editClinicTime(docClinicTime[i]->clinicTimeId, title[i]);
     }
+
+    for (i = 0; i < docClinicTimeCount; i++) {
+        free(title[i]);
+    }
     free(title);
     free(docClinicTime);
     return 0;
@@ -260,8 +264,6 @@ ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime) 
     return getItem(&clinicTimeRecords, clinicTimeRecords.length - 1);
 }
 
-int manageRegistration() { }
-
 unsigned chooseClinicTime(Datetime datetime) {
     int i, availableTimesCount = 0, choice;
     char** title = NULL;
@@ -297,8 +299,12 @@ unsigned chooseClinicTime(Datetime datetime) {
     }
     choice = displaySelect("选择挂号时间段：", availableTimesCount, title);
     clinicTime = choice == -1 ? NULL : availableTimes[choice];
-    free(availableTimes);
+
+    for (i = 0; i < availableTimesCount; i++) {
+        free(title[i]);
+    }
     free(title);
+    free(availableTimes);
     return clinicTime ? clinicTime->clinicTimeId : -1;
 }
 
@@ -309,8 +315,9 @@ void printRegistration(unsigned registrationId, short showTitle) {
     if (showTitle) {
         displayTitle("挂号详情");
     }
-    printf("挂号 #%010u %04u/%02u/%02u %02u:%02u\n", registration->registrationId, registration->datetime.year,
-        registration->datetime.month, registration->datetime.day, registration->datetime.hour, registration->datetime.minute);
+    printf("挂号 #%010u %04u/%02u/%02u %02u:%02u %s\n", registration->registrationId,
+        registration->datetime.year, registration->datetime.month, registration->datetime.day,
+        registration->datetime.hour, registration->datetime.minute, registration->status == valid ? "" : "已取消");
     patient = find_user_by_id(registration->patientId);
     doctor = find_user_by_id(registration->doctorId);
     printf("患者：%s %s %d岁 就诊卡号%lld\n", patient->name, patient->sex, now.year - patient->birth.year, registration->patientId);
@@ -318,14 +325,37 @@ void printRegistration(unsigned registrationId, short showTitle) {
     return;
 }
 
+int editRegistrationRecord(unsigned registrationId) {
+    int selection;
+    if (!registrations.ptr) {
+        loadRegistrations();
+    }
+    RegistrationRecord* registration = getItem(&registrations, registrationId);
+    printRegistration(registrationId, 1);
+    system("pause > nul");
+    if (registration->status == valid) {
+        selection = displaySelect("是否取消挂号？", -2, "是", "否");
+        if (!selection) {
+            registration->status = invalid;
+            saveRegistrations();
+            printf("取消挂号成功。\n");
+            system("pause > nul");
+        }
+    }
+    return 0;
+}
+
 int checkRegistrationRecord(long long patientId) {
     int i, patientRegistrationCount = 0;
     char** title;
     USERS* doctor;
+    if (!registrations.length) {
+        loadRegistrations();
+    }
     RegistrationRecord** patientRegistration = calloc(registrations.length, sizeof(RegistrationRecord*)), * registration;
     for (i = 0; i < registrations.length; i++) {
         registration = getItem(&registrations, i);
-        if (registration->patientId == patientId) {
+        if (registration->patientId == patientId || patientId == -1) {
             patientRegistration[patientRegistrationCount] = registration;
             patientRegistrationCount++;
         }
@@ -344,8 +374,15 @@ int checkRegistrationRecord(long long patientId) {
         if (i == -1 || i == patientRegistrationCount) {
             break;
         }
-        printRegistration(patientRegistration[i]->registrationId, 1);
-        system("pause > nul");
+        if (patientId == -1) {
+            editRegistrationRecord(patientRegistration[i]->registrationId);
+        } else {
+            printRegistration(patientRegistration[i]->registrationId, 1);
+            system("pause > nul");
+        }
+    }
+    for (i = 0; i < patientRegistrationCount; i++) {
+        free(title[i]);
     }
     free(title);
     free(patientRegistration);

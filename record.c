@@ -171,5 +171,9 @@ int checkHistoryRecord(long long patientId) {
         system("pause > nul");
     }
 
+    for (i = 0; i < historyRecordCount; i++) {
+        free(recordTitle[i]);
+    }
     free(recordTitle);
+    free(historyRecord);
 }

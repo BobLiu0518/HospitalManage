@@ -22,7 +22,8 @@ void adminMain() {
             user_main(currentUser);
             break;
         case 1:
-            // TODO
+            checkRegistrationRecord(-1);
+            break;
         case 2:
             medicineMain();
             break;
