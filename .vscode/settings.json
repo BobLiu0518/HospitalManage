@@ -14,6 +14,7 @@
         "beautifuldisplay.h": "c",
         "md5.h": "c",
         "user.h": "c",
-        "033.h": "c"
+        "033.h": "c",
+        "medicine.h": "c"
     }
 }

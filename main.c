@@ -57,7 +57,8 @@ void doctorMain() {
             system("pause > nul");
             break;
         case 2:
-            // TODO
+            appendRecord(currentUser->id);
+            system("pause > nul");
             break;
         }
     }
@@ -108,6 +109,7 @@ int main() {
                 patientMain();
                 break;
             }
+            break;
         case -1:
         case 2:
             if (currentUser && currentUser->user_type == 2) {

@@ -63,6 +63,19 @@ void importMedicine() {
     fclose(fp);
 }
 
+Medicine* getMedicine(char abbr[ ]) {
+    if (medicineHead == NULL) {
+        importMedicine();
+    }
+    Medicine* current = medicineHead;
+    while (current) {
+        if (strcmp(current->abbreviation, abbr) == 0) {
+            return current;
+        }
+    }
+    return NULL;
+}
+
 void addMedicine() {
     Medicine* newMedicine = (Medicine*)malloc(sizeof(Medicine));
     newMedicine->stock = -1; // 初始化
@@ -95,37 +108,31 @@ void viewMedicine() {
 void updateMedicine() {
     char abbr[20];
     displayInput("输入药品缩写", "%s", abbr);
-    Medicine* current = medicineHead;
-    while (current != NULL) {
-        if (strcmp(current->abbreviation, abbr) == 0) {
-            printf("%s 当前库存：%d\n", current->fullName, current->stock);
-            displayInput("输入新库存数", "%d", &current->stock);
-            exportMedicine();
-            printf("修改库存数成功。\n");
-            return;
-        }
-        current = current->next;
+    Medicine* medicine = getMedicine(abbr);
+    if (medicine == NULL) {
+        printf(Red("错误：")"未找到药品 %s。\n", abbr);
     }
-    printf(Red("错误：")"未找到药品 %s。\n", abbr);
+    printf("%s 当前库存：%d\n", medicine->fullName, medicine->stock);
+    displayInput("输入新库存数", "%d", &medicine->stock);
+    exportMedicine();
+    printf("修改库存数成功。\n");
+    return;
 }
 
 int ModifyStock(char abbr[ ], int quantity) {
-    Medicine* current = medicineHead;
-    while (current != NULL) {
-        if (strcmp(current->abbreviation, abbr) == 0) {
-            if (current->stock >= quantity) {
-                current->stock -= quantity;
-                exportMedicine();
-                return 0;
-            } else {
-                printf(Red("错误：")"药品库存不足。\n");
-                return -1;
-            }
-        }
-        current = current->next;
+    Medicine* medicine = getMedicine(abbr);
+    if (medicine == NULL) {
+        printf(Red("错误：")"未找到药品 %s。\n", abbr);
+        return -2;
     }
-    printf(Red("错误：")"未找到药品 %s。\n", abbr);
-    return -2;
+    if (medicine->stock >= quantity) {
+        medicine->stock -= quantity;
+        exportMedicine();
+        return 0;
+    } else {
+        printf(Red("错误：")"药品库存不足。\n");
+        return -1;
+    }
 }
 
 void deleteMedicine() {

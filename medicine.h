@@ -12,6 +12,7 @@ void addMedicine();
 void viewMedicine();
 void updateMedicine();
 int ModifyStock(char abbr[ ], int quantity);
+Medicine* getMedicine(char abbr[ ]);
 void deleteMedicine();
 void exportMedicine();
 void importMedicine();

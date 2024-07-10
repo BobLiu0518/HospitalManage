@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "beautifulDisplay.h"
 #include "dynamicArray.h"
 #include "fileTools.h"
@@ -7,6 +8,8 @@
 #include "033.h"
 #include "record.h"
 #include "user.h"
+#include "bed.h"
+#include "medicine.h"
 
 DynamicArray records = { 0 };
 
@@ -74,8 +77,11 @@ int saveRecordData() {
 }
 
 int appendRecord(long long doctorId) {
+    int i;
+    char medicineAbbr[20], description[RECORD_CONTENT_LENGTH];
     Record newRecord;
     USERS* patient;
+    Medicine* medicine;
     Datetime now = getDateTime();
     displayTitle("新增病历");
     if (!records.length) {
@@ -93,11 +99,25 @@ int appendRecord(long long doctorId) {
     }
     printf("患者：%s %s %d岁\n", patient->name, patient->sex, now.year - patient->birth.year);
     displayInputMultiline("请输入病历信息", newRecord.content, RECORD_CONTENT_LENGTH);
-    // TODO：开药、病房
+    while (1) {
+        i = displaySelect("是否需要添加用药？", -2, "是", "否");
+        if (i) {
+            break;
+        }
+        displayInput("请输入药物缩写", "%s", medicineAbbr);
+        displayInput("请输入药物用量", "%d", &i);
+        if (!ModifyStock(medicineAbbr, i)) {
+            medicine = getMedicine(medicineAbbr);
+            sprintf(description, "\n【用药】%s[%s] %d单位", medicine->fullName, medicineAbbr, i);
+            strcat(newRecord.content, description);
+            printf("添加药物成功。\n");
+        }
+        system("pause > nul");
+    }
+    // TODO：病房
     appendItem(&records, &newRecord);
     saveRecordData();
-    printf("添加病历信息成功\n");
-    system("pause > nul");
+    printRecord(((Record*)getItem(&records, records.length - 1))->recordId);
     return 0;
 }
 
