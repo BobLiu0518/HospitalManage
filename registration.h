@@ -3,6 +3,7 @@
 
 #include "timeTools.h"
 #define CLINIC_TIME_TITLE_LENGTH 40
+#define REGISTRATION_TITLE_LENGTH 40
 
 typedef enum {
     valid, invalid
@@ -43,6 +44,7 @@ int setClinicTimeStatus(unsigned clinicTimeId, Status status);
 ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime);
 unsigned chooseClinicTime(Datetime datetime);
 void printRegistration(unsigned registrationId, short showTitle);
+int checkRegistrationRecord(long long patientId);
 int appendRegistration(long long patientId, unsigned clinicTimeId, Datetime datetime);
 int assignRegistration(unsigned patientId);
 

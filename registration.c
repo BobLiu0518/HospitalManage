@@ -279,7 +279,8 @@ unsigned chooseClinicTime(Datetime datetime) {
     ClinicTimeRecord* clinicTimeRecord;
     for (i = 0; i < clinicTimes.length; i++) {
         clinicTime = getItem(&clinicTimes, i);
-        if (clinicTime->weekday == weekday && clinicTime->status == valid) {
+        clinicTimeRecord = getClinicTimeRecord(clinicTime->clinicTimeId, datetime);
+        if (clinicTime->weekday == weekday && clinicTime->status == valid && clinicTimeRecord->remainAmount > 0) {
             availableTimes[availableTimesCount] = clinicTime;
             availableTimesCount++;
         }
@@ -290,9 +291,9 @@ unsigned chooseClinicTime(Datetime datetime) {
         clinicTimeRecord = getClinicTimeRecord(clinicTime->clinicTimeId, datetime);
         doctor = find_user_by_id(clinicTime->doctorId);
         title[i] = calloc(CLINIC_TIME_TITLE_LENGTH, sizeof(char));
-        sprintf(title[i], "%s医生 %02u:%02u~%02u:%02u 余%02d", doctor->name,
-            clinicTime->startTime.hour, clinicTime->startTime.minute,
-            clinicTime->endTime.hour, clinicTime->endTime.minute, clinicTimeRecord->remainAmount);
+        sprintf(title[i], "%s %s%s %02u:%02u~%02u:%02u", doctor->department, doctor->name,
+            doctor->title, clinicTime->startTime.hour, clinicTime->startTime.minute,
+            clinicTime->endTime.hour, clinicTime->endTime.minute);
     }
     choice = displaySelect("选择挂号时间段：", availableTimesCount, title);
     clinicTime = choice == -1 ? NULL : availableTimes[choice];
@@ -315,6 +316,40 @@ void printRegistration(unsigned registrationId, short showTitle) {
     printf("患者：%s %s %d岁 就诊卡号%lld\n", patient->name, patient->sex, now.year - patient->birth.year, registration->patientId);
     printf("医生：%s %s %s 工号%lld\n", doctor->name, doctor->department, doctor->title, registration->doctorId);
     return;
+}
+
+int checkRegistrationRecord(long long patientId) {
+    int i, patientRegistrationCount = 0;
+    char** title;
+    USERS* doctor;
+    RegistrationRecord** patientRegistration = calloc(registrations.length, sizeof(RegistrationRecord*)), * registration;
+    for (i = 0; i < registrations.length; i++) {
+        registration = getItem(&registrations, i);
+        if (registration->patientId == patientId) {
+            patientRegistration[patientRegistrationCount] = registration;
+            patientRegistrationCount++;
+        }
+    }
+    title = calloc(patientRegistrationCount + 1, sizeof(char*));
+    for (i = 0; i < patientRegistrationCount; i++) {
+        title[i] = calloc(REGISTRATION_TITLE_LENGTH, sizeof(char));
+        doctor = find_user_by_id(patientRegistration[i]->doctorId);
+        sprintf(title[i], "%04u/%02u/%02u %02u:%02u %s", patientRegistration[i]->datetime.year,
+            patientRegistration[i]->datetime.month, patientRegistration[i]->datetime.day,
+            patientRegistration[i]->datetime.hour, patientRegistration[i]->datetime.minute, doctor->name);
+    }
+    title[patientRegistrationCount] = "退出挂号记录查询";
+    while (1) {
+        i = displaySelect("请选择要查看的挂号记录：", patientRegistrationCount + 1, title);
+        if (i == -1 || i == patientRegistrationCount) {
+            break;
+        }
+        printRegistration(patientRegistration[i]->registrationId, 1);
+        system("pause > nul");
+    }
+    free(title);
+    free(patientRegistration);
+    return 0;
 }
 
 int appendRegistration(long long patientId, unsigned clinicTimeId, Datetime datetime) {
