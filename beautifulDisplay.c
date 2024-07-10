@@ -6,7 +6,7 @@
 #include <conio.h>
 #include "033.h"
 
-int displayTitle(char* title) {
+void displayTitle(char* title) {
     int i = 0;
     printf("\033[2J\033[7m");
     while (i < 40) {
@@ -19,6 +19,7 @@ int displayTitle(char* title) {
         }
     }
     printf("\033[0m\n");
+    return;
 }
 
 int displayInput(char* prompt, char* format, void* ptr) {
@@ -26,6 +27,7 @@ int displayInput(char* prompt, char* format, void* ptr) {
     printf("%s: \033[2m", prompt);
     i = scanf(format, ptr);
     printf("\033[0m");
+    setbuf(stdin, NULL);
     return i;
 }
 
@@ -52,6 +54,7 @@ int displayInputMultiline(char* prompt, char* str, int max) {
         length--;
     }
 
+    setbuf(stdin, NULL);
     printf("\n");
     return length;
 }
@@ -87,6 +90,7 @@ int displayInputPassword(char* prompt, char* result, int max) {
             }
         }
     }
+    setbuf(stdin, NULL);
     printf("\033[0m\n");
     return i;
 }
