@@ -114,7 +114,12 @@ int appendRecord(long long doctorId) {
         }
         system("pause > nul");
     }
-    // TODO：病房
+    i = displaySelect("是否需要设置住院？", -2, "是", "否");
+    if (!i) {
+        if (!setOccupy(patient->id)) {
+            strcat(newRecord.content, "\n【住院】");
+        }
+    }
     appendItem(&records, &newRecord);
     saveRecordData();
     printRecord(((Record*)getItem(&records, records.length - 1))->recordId);

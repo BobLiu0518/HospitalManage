@@ -33,15 +33,18 @@ void loadZones() {
         return;
     }
     if (zonesCount) {
-        // TODO: free
+        for (i = 0; i < zonesCount; i++) {
+            free(zones[i].beds);
+        }
         zonesCount = 0;
     }
     while (!feof(file)) {
-        fscanf(file, "[%s %s %d]\n", zones[zonesCount].zoneName, zones[zonesCount].department, zones[zonesCount].bedsCount);
+        fscanf(file, "[%s %s %d]\n", zones[zonesCount].zoneName, zones[zonesCount].department, &zones[zonesCount].bedsCount);
         zones[zonesCount].beds = calloc(zones[zonesCount].bedsCount, sizeof(Bed));
         for (i = 0; i < zones[zonesCount].bedsCount; i++) {
-            fscanf(file, "%d,%d\n", zones[zonesCount].beds[i].bedNumber, zones[zonesCount].beds[i].status);
+            fscanf(file, "%d,%d\n", &zones[zonesCount].beds[i].bedNumber, &zones[zonesCount].beds[i].status);
         }
+        zonesCount++;
     }
     fclose(file);
 }
@@ -68,7 +71,8 @@ void recordOccupancy(long long patientId, Datetime admissionDate, char* zoneName
                 printf(Red("错误：")"该床位已被占用。\n");
             }
             zones[i].beds[bedNumber - 1].status = BED_STATUS_OCCUPIED;
-            fprintf(file, "Patient: %d, Admission Date: %04u/%02u/%02u, Zone: %s, Bed: %d\n",
+            fseek(file, 0, SEEK_SET);
+            fprintf(file, "患者%lld %04u/%02u/%02u %s病区%d床\n",
                 record.patientId, record.admissionDate.year, record.admissionDate.month, record.admissionDate.day,
                 record.zoneName, record.bedNumber);
             fclose(file);
@@ -88,9 +92,9 @@ int selectBed(int* zoneIndex, int* bedNumber) {
     char** zoneNames = calloc(zonesCount, sizeof(char*));
     for (i = 0; i < zonesCount; i++) {
         zoneNames[i] = calloc(40, sizeof(char));
-        sprintf(zoneNames[i], "[%s] %s", zones[i].zoneName, zones[i].department);
+        sprintf(zoneNames[i], "%s %s", zones[i].zoneName, zones[i].department);
     }
-    *zoneIndex = displaySelect("选择病区：", zonesCount);
+    *zoneIndex = displaySelect("选择病区：", zonesCount, zoneNames);
     for (i = 0; i < zonesCount; i++) {
         free(zoneNames[i]);
     }
@@ -101,7 +105,7 @@ int selectBed(int* zoneIndex, int* bedNumber) {
     printf("[%s] %s 共%d床位 (1~%d)\n", zones[*zoneIndex].zoneName, zones[*zoneIndex].department,
         zones[*zoneIndex].bedsCount, zones[*zoneIndex].bedsCount);
     displayInput("选择病床", "%d", bedNumber);
-    if (*bedNumber < 1 || *bedNumber > zones[i].bedsCount) {
+    if (*bedNumber < 1 || *bedNumber > zones[*zoneIndex].bedsCount) {
         printf(Red("错误：")"病床不存在。\n");
         return -1;
     }
@@ -115,12 +119,12 @@ int setOccupy(long long patientId) {
         if (zones[zoneIndex].beds[bedNumber - 1].status == BED_STATUS_EMPTY) {
             recordOccupancy(patientId, now, zones[zoneIndex].zoneName, bedNumber);
             printf("成功设置床位。\n");
+            return 0;
         } else {
             printf("该床位已被占用。\n");
             return -1;
         }
     }
-    return 0;
 }
 
 int deleteOccupancy(int zoneIndex, int bedNumber) {
@@ -128,7 +132,7 @@ int deleteOccupancy(int zoneIndex, int bedNumber) {
         loadZones();
     }
     if (zones[zoneIndex].beds[bedNumber - 1].status == BED_STATUS_EMPTY) {
-        printf(Red("错误：")"该床位已被占用。\n");
+        printf(Red("错误：")"该床位未被占用。\n");
         return -1;
     }
     zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_EMPTY;
@@ -137,9 +141,7 @@ int deleteOccupancy(int zoneIndex, int bedNumber) {
 }
 
 int bedMain() {
-    printf("1111111");
     loadZones();
-    printf("222222");
     int choice;
     while (1) {
         choice = displaySelect("[管理员] 床位管理", -4, "设置床位占用", "查询床位占用记录", "取消床位占用", "退出床位管理");
@@ -149,7 +151,7 @@ int bedMain() {
             USERS* patient;
             displayInput("输入患者ID", "%lld", &patientId);
             patient = find_user_by_id(patientId);
-            if (patient == NULL) {
+            if (patient == NULL || patient->user_type != 2) {
                 printf(Red("错误：")"患者 %lld 不存在。", patientId);
             } else {
                 setOccupy(patientId);
@@ -171,8 +173,8 @@ int bedMain() {
         case 2:
             int zoneIndex, bedNumber;
             if (selectBed(&zoneIndex, &bedNumber) == 0) {
-                if (deleteOccupancy(zoneIndex, bedNumber) == -1) {
-                    printf("No existing occupancy there.\n");
+                if (deleteOccupancy(zoneIndex, bedNumber) == 0) {
+                    printf("操作成功。\n");
                 }
             }
             break;
