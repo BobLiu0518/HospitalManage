@@ -9,7 +9,7 @@
 
 USERS* currentUser = NULL;
 
-void adminMain() {
+void adminMain(USERS* currentUser) {
     int selection;
     while (1) {
         selection = displaySelect("欢迎使用管理员系统", -5, "用户管理", "挂号管理", "药品管理", "病床管理", "退出登录");
@@ -18,7 +18,7 @@ void adminMain() {
         case 4:
             return;
         case 0:
-            user_main();
+            user_main(currentUser);
             break;
         case 1:
             medicineMain();
@@ -67,8 +67,8 @@ void patientMain() {
 }
 
 int main() {
-    // create_data();
     int selection;
+    create_data();
     system("chcp 936 > nul");
     system("title 医院管理系统");
     while (1) {
@@ -87,7 +87,7 @@ int main() {
             }
             switch (currentUser->user_type) {
             case 0:
-                adminMain();
+                adminMain(currentUser);
                 break;
             case 1:
                 doctorMain();
@@ -99,7 +99,7 @@ int main() {
             currentUser = NULL;
             break;
         case 1:
-            add_user(create_user());
+            create_user(0);
             break;
         }
         system("pause > nul");
