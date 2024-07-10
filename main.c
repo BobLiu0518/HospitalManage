@@ -80,24 +80,17 @@ void patientMain() {
             checkHistoryRecord(currentUser->id);
             break;
         }
-        system("pause > nul");
     }
 }
 
 int main() {
     int selection;
-    create_data();
+    // create_data();
     system("chcp 936 > nul");
     system("title 医院管理系统");
     while (1) {
         selection = displaySelect("欢迎使用医院管理系统", -3, "登录系统", "患者注册", "退出系统");
         switch (selection) {
-        case -1:
-        case 2:
-            printf("祝你生活愉快，再见！\n");
-            system("pause > nul");
-            exit(0);
-            break;
         case 0:
             currentUser = login();
             if (!currentUser) {
@@ -114,10 +107,19 @@ int main() {
                 patientMain();
                 break;
             }
-            currentUser = NULL;
+        case -1:
+        case 2:
+            if (currentUser && currentUser->user_type == 2) {
+                printf("祝你早日康复，再见！\n");
+            } else {
+                printf("祝你生活愉快，再见！\n");
+            }
+            system("pause > nul");
+            exit(0);
             break;
         case 1:
             create_user(0);
+            system("pause > nul");
             break;
         }
     }

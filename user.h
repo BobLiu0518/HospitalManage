@@ -20,7 +20,7 @@ typedef struct users {
 } USERS;
 
 void create_data();
-USERS* create_user();
+int create_user(int is_admin);
 void add_user(USERS* new_user);
 int read_user_data();
 USERS* login();
@@ -28,6 +28,6 @@ void free_users();
 USERS* find_user_by_id(long long input_id);
 void display_user_info(USERS* user);
 int delete_user(long long input_id);
-int user_main();
+int user_main(USERS* current);
 
 #endif

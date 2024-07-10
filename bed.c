@@ -10,7 +10,7 @@ Zone zones[MAX_ZONES];
 
 void initializeZones() {
     for (int i = 0; i < MAX_ZONES; i++) {
-        sprintf(zones[i].zoneName, "Zone %d", i + 1);
+        sprintf(zones[i].zoneName, "%02d区", i + 1);
         for (int j = 0; j < MAX_BEDS_PER_ZONE; j++) {
             zones[i].beds[j].bedNumber = j + 1;
             zones[i].beds[j].status = BED_STATUS_EMPTY;
@@ -90,7 +90,6 @@ int deleteOccupancy(int zoneIndex, int bedNumber) {
 }
 
 int bedMain() {
-    // Load bed information from file if it exists
     FILE* testFile = fopen("storage\\BedInfo.txt", "r");
     if (testFile) {
         fclose(testFile);
@@ -100,31 +99,23 @@ int bedMain() {
         saveZonesToFile("storage\\BedInfo.txt");
     }
 
-    // Main loop to interact with the user
     int choice;
     do {
-        printf("\nWelcome to Bed Management System!\n");
-        printf("1. Record a new occupancy\n");
-        printf("2. View bed occupancy records\n");
-        printf("3. Delete an existing occupancy\n");
-        printf("4. Exit\n");
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
-        getchar(); // Consume newline left in stdin buffer
+        choice = displaySelect("[管理员] 床位管理", -4, "设置床位占用", "查询床位状态", "取消床位占用", "退出床位管理");
 
         switch (choice) {
-        case 1: {
+        case 0: {
             char patientName[100];
             char admissionDate[50];
             int zoneIndex, bedNumber;
 
             printf("Enter patient name: ");
             fgets(patientName, sizeof(patientName), stdin);
-            patientName[strcspn(patientName, "\n")] = 0; // Remove newline character
+            patientName[strcspn(patientName, "\n")] = 0;
 
             printf("Enter admission date (e.g.2004-07-03): ");
             fgets(admissionDate, sizeof(admissionDate), stdin);
-            admissionDate[strcspn(admissionDate, "\n")] = 0; // Remove newline character
+            admissionDate[strcspn(admissionDate, "\n")] = 0;
 
             printf("Select a zone:\n");
             for (int i = 0; i < MAX_ZONES; i++) {
@@ -155,7 +146,7 @@ int bedMain() {
                 break;
             }
         }
-        case 2: {
+        case 1: {
             printf("Bed occupancy records:\n");
             FILE* recordsFile = fopen("storage\\BedList.txt", "r");
             if (recordsFile) {
@@ -169,7 +160,7 @@ int bedMain() {
             }
             break;
         }
-        case 3: {
+        case 2: {
             int zoneIndex, bedNumber;
 
             printf("Enter zone index to delete occupancy (1-%d): ", MAX_ZONES);
@@ -194,18 +185,13 @@ int bedMain() {
             }
             break;
         }
-        case 4:
-            printf("Exiting...\n");
-            break;
-        default:
-            printf("Invalid choice. Please try again.\n");
-
+        case -1:
+        case 3:
+            saveZonesToFile("storage\\BedInfo.txt");
+            return 0;
         }
-        setbuf(stdin, NULL);
-    } while (choice != 4);
-
-    // Save the current bed statuses before exiting
-    saveZonesToFile("storage\\BedInfo.txt");
+        system("pause > nul");
+    } while (choice != 3);
 
     return 0;
 }

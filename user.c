@@ -245,6 +245,7 @@ int create_user(int is_admin) {
 
     add_user(new_user);
     save_user_data();
+    system("pause > nul");
     return 0;
 }
 

@@ -6,6 +6,7 @@
 #include "timeTools.h"
 #include "033.h"
 #include "record.h"
+#include "user.h"
 
 DynamicArray records = { 0 };
 
@@ -74,6 +75,8 @@ int saveRecordData() {
 
 int appendRecord(long long doctorId) {
     Record newRecord;
+    USERS* patient;
+    Datetime now = getDateTime();
     displayTitle("新增病历");
     if (!records.length) {
         loadRecordData();
@@ -83,12 +86,15 @@ int appendRecord(long long doctorId) {
     newRecord.datetime = getDateTime();
     newRecord.doctorId = doctorId;
     displayInput("请输入患者 ID", "%lld", &newRecord.patientId);
-    /* TODO */
-    // patient = getPatient(newRecord.patientId);
-    printf("患者：%s %s %d岁\n", "张三", "男", 18);
+    patient = find_user_by_id(newRecord.patientId);
+    if (!patient || patient->user_type != 2) {
+        printf(Red("错误：")"患者 %lld 不存在。\n", newRecord.patientId);
+        return -1;
+    }
+    printf("患者：%s %s %d岁\n", patient->name, patient->sex, now.year - patient->birth.year);
     displayInputMultiline("请输入病历信息", newRecord.content, RECORD_CONTENT_LENGTH);
+    // TODO：开药、病房
     appendItem(&records, &newRecord);
-
     saveRecordData();
     printf("添加病历信息成功\n");
     system("pause > nul");
@@ -98,6 +104,8 @@ int appendRecord(long long doctorId) {
 int printRecord(unsigned long recordId) {
     int i, j;
     Record* record;
+    USERS* patient, * doctor;
+    Datetime now = getDateTime();
     if (!records.length) {
         loadRecordData();
     }
@@ -107,11 +115,10 @@ int printRecord(unsigned long recordId) {
             displayTitle("病历详情");
             printf(Strong("病历 #%010lu %04u/%02u/%02u %02u:%02u\n"), recordId, record->datetime.year,
                 record->datetime.month, record->datetime.day, record->datetime.hour, record->datetime.minute);
-            /* TODO */
-            // patient = getPatient(record->patientId);
-            printf("患者：%s %s %d岁 就诊卡号%lld\n", "张三", "男", 18, record->patientId);
-            // doctor = getDoctor(record->doctorId);
-            printf("医生：%s %s 工号%lld\n", "李四", "副主任医师", 100);
+            patient = find_user_by_id(record->patientId);
+            doctor = find_user_by_id(record->doctorId);
+            printf("患者：%s %s %d岁 就诊卡号%lld\n", patient->name, patient->sex, now.year - patient->birth.year, record->patientId);
+            printf("医生：%s %s %s 工号%lld\n", doctor->name, doctor->department, doctor->title, doctor->id);
             for (j = 0; j < 40; j++) {
                 printf("-");
             }

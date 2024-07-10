@@ -36,7 +36,7 @@ int loadRegistrations();
 int saveClinicTime();
 int saveClinicTimeRecord();
 int saveRegistrations();
-int addClinicTime(unsigned doctorId, Weekday weekday, Time startTime, Time endTime, unsigned maxAmount);
+int addClinicTime(long long doctorId);
 int setClinicTimeStatus(unsigned clinicTimeId, Status status);
 ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime);
 unsigned selectClinicTime(Datetime datetime);

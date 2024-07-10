@@ -5,6 +5,7 @@
 #include "fileTools.h"
 #include "timeTools.h"
 #include "033.h"
+#include "user.h"
 #include "registration.h"
 
 DynamicArray clinicTimes = { 0 };
@@ -134,10 +135,25 @@ int saveRegistrations() {
     return 0;
 }
 
-int addClinicTime(unsigned doctorId, Weekday weekday, Time startTime, Time endTime, unsigned maxAmount) {
+int addClinicTime(long long doctorId) {
     if (!clinicTimes.ptr) {
         loadClinicTime();
     }
+    Weekday weekday;
+    Time startTime, endTime;
+    unsigned maxAmount;
+    char temp[15], trash;
+
+    weekday = displaySelect("选择坐诊日", -7, "周日", "周一", "周二", "周三", "周四", "周五", "周六");
+    if (weekday == -1) {
+        return 0;
+    }
+    displayInput("请输入开始时间", "%s", temp);
+    sscanf(temp, "%u%c%u", &startTime.hour, &trash, &startTime.minute);
+    displayInput("请输入结束时间", "%s", temp);
+    sscanf(temp, "%u%c%u", &endTime.hour, &trash, &endTime.minute);
+    displayInput("请输入接诊数量", "%u", &maxAmount);
+
     ClinicTime clinicTime = {
         clinicTimes.length,
         doctorId,
@@ -149,6 +165,7 @@ int addClinicTime(unsigned doctorId, Weekday weekday, Time startTime, Time endTi
     };
     appendItem(&clinicTimes, &clinicTime);
     saveClinicTime();
+    printf("添加坐诊时间成功。\n");
     return clinicTime.clinicTimeId;
 }
 
@@ -188,6 +205,7 @@ ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime) 
 unsigned selectClinicTime(Datetime datetime) {
     int i, availableTimesCount = 0, choice;
     char** title = NULL;
+    USERS* doctor;
 
     if (!clinicTimes.ptr) {
         loadClinicTime();
@@ -210,9 +228,9 @@ unsigned selectClinicTime(Datetime datetime) {
     for (i = 0; i < availableTimesCount; i++) {
         clinicTime = availableTimes[i];
         clinicTimeRecord = getClinicTimeRecord(clinicTime->clinicTimeId, datetime);
-        // TODO: getName(doctorId)
+        doctor = find_user_by_id(clinicTime->doctorId);
         title[i] = calloc(CLINIC_TIME_TITLE_LENGTH, sizeof(char));
-        sprintf(title[i], "%s医生 %02u:%02u~%02u:%02u 余%02d", "李四", clinicTime->startTime.hour, clinicTime->startTime.minute,
+        sprintf(title[i], "%s医生 %02u:%02u~%02u:%02u 余%02d", doctor->name, clinicTime->startTime.hour, clinicTime->startTime.minute,
             clinicTime->endTime.hour, clinicTime->endTime.minute, clinicTimeRecord->remainAmount);
     }
     choice = displaySelect("选择挂号时间段：", availableTimesCount, title);
@@ -224,16 +242,17 @@ unsigned selectClinicTime(Datetime datetime) {
 
 void printRegistration(unsigned registrationId, short showTitle) {
     RegistrationRecord* registration = getItem(&registrations, registrationId);
+    USERS* patient, * doctor;
+    Datetime now = getDateTime();
     if (showTitle) {
         displayTitle("挂号详情");
     }
-    printf("挂号 %010u %04u/%02u/%02u %02u:%02u\n", registration->registrationId, registration->datetime.year,
+    printf("挂号 #%010u %04u/%02u/%02u %02u:%02u\n", registration->registrationId, registration->datetime.year,
         registration->datetime.month, registration->datetime.day, registration->datetime.hour, registration->datetime.minute);
-    /* TODO */
-    // patient = getPatient(registration->patientId);
-    printf("患者：%s %s %d岁 就诊卡号%lld\n", "张三", "男", 18, registration->patientId);
-    // doctor = getDoctor(registration->doctorId);
-    printf("医生：%s %s 工号%lld\n", "李四", "副主任医师", 100);
+    patient = find_user_by_id(registration->patientId);
+    doctor = find_user_by_id(registration->doctorId);
+    printf("患者：%s %s %d岁 就诊卡号%lld\n", patient->name, patient->sex, now.year - patient->birth.year, registration->patientId);
+    printf("医生：%s %s %s 工号%lld\n", doctor->name, doctor->department, doctor->title, registration->doctorId);
     return;
 }
 
@@ -276,8 +295,6 @@ int appendRegistration(long long patientId, unsigned clinicTimeId, Datetime date
     appendItem(&registrations, &registration);
     saveClinicTimeRecord();
     saveRegistrations();
-    printf("挂号成功，你的挂号信息如下：\n");
-    printRegistration(registrations.length - 1, 0);
     return 0;
 }
 
@@ -295,4 +312,7 @@ int assignRegistration(unsigned patientId) {
     displayInput("请输入预约时间", "%s", temp);
     sscanf(temp, "%u%c%u", &datetime.hour, &trash, &datetime.minute);
     appendRegistration(patientId, clinicTimeId, datetime);
+    printf("挂号成功，你的挂号信息如下：\n");
+    printRegistration(registrations.length - 1, 0);
+    system("pause > nul");
 }

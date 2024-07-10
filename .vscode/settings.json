@@ -12,6 +12,7 @@
         "filetools.h": "c",
         "bed.h": "c",
         "beautifuldisplay.h": "c",
-        "md5.h": "c"
+        "md5.h": "c",
+        "user.h": "c"
     }
 }
