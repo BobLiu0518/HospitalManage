@@ -1,32 +1,35 @@
 #ifndef BED
 #define BED
 
-#define MAX_ZONES 5
-#define MAX_BEDS_PER_ZONE 10
+#include "timeTools.h"
+#define MAX_ZONES 50
 #define BED_STATUS_EMPTY 0
 #define BED_STATUS_OCCUPIED 1
 
 typedef struct {
     int bedNumber;
-    int status; // BED_STATUS_EMPTY or BED_STATUS_OCCUPIED
+    int status;
 } Bed;
 
 typedef struct {
-    char zoneName[50];
-    Bed beds[MAX_BEDS_PER_ZONE];
+    char zoneName[10];
+    char department[50];
+    int bedsCount;
+    Bed* beds;
 } Zone;
 
 typedef struct {
-    char patientName[100];
-    char admissionDate[50];
-    int zoneIndex;
+    long long patientId;
+    Datetime admissionDate;
+    char zoneName[10];
     int bedNumber;
 } OccupancyRecord;
 
-void initializeZones();
-void saveZonesToFile(const char* filename);
-void loadZonesFromFile(const char* filename);
-void recordOccupancy(const char* patientName, const char* admissionDate, int zoneIndex, int bedNumber);
+void saveZones();
+void loadZones();
+void recordOccupancy(long long patientId, Datetime admissionDate, char* zoneName, int bedNumber);
+int selectBed(int* zoneIndex, int* bedNumber);
+int setOccupy(long long patientId);
 int deleteOccupancy(int zoneIndex, int bedNumber);
 int bedMain();
 

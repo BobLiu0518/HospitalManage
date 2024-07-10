@@ -87,7 +87,6 @@ void patientMain() {
 
 int main() {
     int selection;
-    // create_data();
     system("chcp 936 > nul");
     system("title 医院管理系统");
     while (1) {

@@ -1,197 +1,185 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include "bed.h"
+#include "user.h"
 #include "beautifulDisplay.h"
+#include "timeTools.h"
 #include "033.h"
 
 Zone zones[MAX_ZONES];
+int zonesCount = 0;
 
-void initializeZones() {
-    for (int i = 0; i < MAX_ZONES; i++) {
-        sprintf(zones[i].zoneName, "%02d区", i + 1);
-        for (int j = 0; j < MAX_BEDS_PER_ZONE; j++) {
-            zones[i].beds[j].bedNumber = j + 1;
-            zones[i].beds[j].status = BED_STATUS_EMPTY;
-        }
-    }
-}
-
-void saveZonesToFile(const char* filename) {
-    FILE* file = fopen(filename, "w");
+void saveZones() {
+    FILE* file = fopen("storage\\BedInfo.txt", "w");
     if (!file) {
-        printf(Red("错误：")"打开 %s 失败。\n", filename);
-        exit(-1);
+        printf(Red("错误：")"打开 storage\\BedInfo.txt 失败。\n");
+        return;
     }
-    for (int i = 0; i < MAX_ZONES; i++) {
-        fprintf(file, "%s\n", zones[i].zoneName);
-        for (int j = 0; j < MAX_BEDS_PER_ZONE; j++) {
+    for (int i = 0; i < zonesCount; i++) {
+        fprintf(file, "[%s %s %d]\n", zones[i].zoneName, zones[i].department, zones[i].bedsCount);
+        for (int j = 0; j < zones[i].bedsCount; j++) {
             fprintf(file, "%d,%d\n", zones[i].beds[j].bedNumber, zones[i].beds[j].status);
         }
     }
     fclose(file);
 }
 
-void loadZonesFromFile(const char* filename) {
-    FILE* file = fopen(filename, "r");
+void loadZones() {
+    int i;
+    FILE* file = fopen("storage\\BedInfo.txt", "r");
     if (!file) {
-        printf(Red("错误：")"打开 %s 失败。\n", filename);
-        exit(-1);
+        printf(Red("错误：")"打开 storage\\BedInfo.txt 失败。\n");
+        return;
     }
-    char zoneName[50];
-    int bedNumber, status;
-    char line[100];
-    for (int i = 0; i < MAX_ZONES && fgets(line, sizeof(line), file); i++) {
-        sscanf(line, "%49[^\n]", zoneName);
-        strcpy(zones[i].zoneName, zoneName);
-        for (int j = 0; j < MAX_BEDS_PER_ZONE && fgets(line, sizeof(line), file); j++) {
-            sscanf(line, "%d,%d", &bedNumber, &status);
-            zones[i].beds[j].bedNumber = bedNumber;
-            zones[i].beds[j].status = status;
+    if (zonesCount) {
+        // TODO: free
+        zonesCount = 0;
+    }
+    while (!feof(file)) {
+        fscanf(file, "[%s %s %d]\n", zones[zonesCount].zoneName, zones[zonesCount].department, zones[zonesCount].bedsCount);
+        zones[zonesCount].beds = calloc(zones[zonesCount].bedsCount, sizeof(Bed));
+        for (i = 0; i < zones[zonesCount].bedsCount; i++) {
+            fscanf(file, "%d,%d\n", zones[zonesCount].beds[i].bedNumber, zones[zonesCount].beds[i].status);
         }
     }
     fclose(file);
 }
 
-void recordOccupancy(const char* patientName, const char* admissionDate, int zoneIndex, int bedNumber) {
+void recordOccupancy(long long patientId, Datetime admissionDate, char* zoneName, int bedNumber) {
+    int i;
     OccupancyRecord record;
-    strcpy(record.patientName, patientName);
-    strcpy(record.admissionDate, admissionDate);
-    record.zoneIndex = zoneIndex;
+    if (zonesCount == 0) {
+        loadZones();
+    }
+    record.patientId = patientId;
+    record.admissionDate = admissionDate;
+    strcpy(record.zoneName, zoneName);
     record.bedNumber = bedNumber;
 
-    FILE* file = fopen("storage\\BedList.txt", "a");
+    FILE* file = fopen("storage\\BedRecord.txt", "a");
     if (!file) {
-        printf(Red("错误：")"打开 storage\\BedList.txt 失败。\n");
-        exit(-1);
+        printf(Red("错误：")"打开 storage\\BedRecord.txt 失败。\n");
+        return;
     }
-    fprintf(file, "Patient: %s, Admission Date: %s, Zone: %d, Bed: %d\n",
-        record.patientName, record.admissionDate, record.zoneIndex + 1, record.bedNumber);
+    for (i = 0; i < zonesCount; i++) {
+        if (strcmp(zones[i].zoneName, zoneName) == 0) {
+            if (zones[i].beds[bedNumber - 1].status == BED_STATUS_OCCUPIED) {
+                printf(Red("错误：")"该床位已被占用。\n");
+            }
+            zones[i].beds[bedNumber - 1].status = BED_STATUS_OCCUPIED;
+            fprintf(file, "Patient: %d, Admission Date: %04u/%02u/%02u, Zone: %s, Bed: %d\n",
+                record.patientId, record.admissionDate.year, record.admissionDate.month, record.admissionDate.day,
+                record.zoneName, record.bedNumber);
+            fclose(file);
+            saveZones();
+            return;
+        }
+    }
+    printf(Red("错误：")"病区 %s 不存在。", zoneName);
     fclose(file);
-
-    // Update bed status in memory
-    zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_OCCUPIED;
 }
 
+int selectBed(int* zoneIndex, int* bedNumber) {
+    int i;
+    if (!zonesCount) {
+        loadZones();
+    }
+    char** zoneNames = calloc(zonesCount, sizeof(char*));
+    for (i = 0; i < zonesCount; i++) {
+        zoneNames[i] = calloc(40, sizeof(char));
+        sprintf(zoneNames[i], "[%s] %s", zones[i].zoneName, zones[i].department);
+    }
+    *zoneIndex = displaySelect("选择病区：", zonesCount);
+    for (i = 0; i < zonesCount; i++) {
+        free(zoneNames[i]);
+    }
+    free(zoneNames);
+    if (i == -1) {
+        return -1;
+    }
+    printf("[%s] %s 共%d床位 (1~%d)\n", zones[*zoneIndex].zoneName, zones[*zoneIndex].department,
+        zones[*zoneIndex].bedsCount, zones[*zoneIndex].bedsCount);
+    displayInput("选择病床", "%d", bedNumber);
+    if (*bedNumber < 1 || *bedNumber > zones[i].bedsCount) {
+        printf(Red("错误：")"病床不存在。\n");
+        return -1;
+    }
+    return 0;
+}
+
+int setOccupy(long long patientId) {
+    int zoneIndex, bedNumber;
+    Datetime now = getDateTime();
+    if (selectBed(&zoneIndex, &bedNumber) == 0) {
+        if (zones[zoneIndex].beds[bedNumber - 1].status == BED_STATUS_EMPTY) {
+            recordOccupancy(patientId, now, zones[zoneIndex].zoneName, bedNumber);
+            printf("成功设置床位。\n");
+        } else {
+            printf("该床位已被占用。\n");
+            return -1;
+        }
+    }
+    return 0;
+}
 
 int deleteOccupancy(int zoneIndex, int bedNumber) {
-    // 更新内存中的床位状态
-    if (zoneIndex >= 0 && zoneIndex < MAX_ZONES && bedNumber >= 1 && bedNumber <= MAX_BEDS_PER_ZONE) {
-        if (zones[zoneIndex].beds[bedNumber - 1].status == BED_STATUS_OCCUPIED) {
-            zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_EMPTY;
-            printf("Bed %d in Zone %d is now marked as empty.\n", bedNumber, zoneIndex + 1);
-            return 0; // 成功时返回0
-        } else
-            return -1; // 查无此人时返回-1
-    } else {
-        return -2; // 全失败时返回-2
+    if (zonesCount == 0) {
+        loadZones();
     }
+    if (zones[zoneIndex].beds[bedNumber - 1].status == BED_STATUS_EMPTY) {
+        printf(Red("错误：")"该床位已被占用。\n");
+        return -1;
+    }
+    zones[zoneIndex].beds[bedNumber - 1].status = BED_STATUS_EMPTY;
+    saveZones();
+    return 0;
 }
 
 int bedMain() {
-    FILE* testFile = fopen("storage\\BedInfo.txt", "r");
-    if (testFile) {
-        fclose(testFile);
-        loadZonesFromFile("storage\\BedInfo.txt");
-    } else {
-        initializeZones();
-        saveZonesToFile("storage\\BedInfo.txt");
-    }
-
+    printf("1111111");
+    loadZones();
+    printf("222222");
     int choice;
-    do {
-        choice = displaySelect("[管理员] 床位管理", -4, "设置床位占用", "查询床位状态", "取消床位占用", "退出床位管理");
-
+    while (1) {
+        choice = displaySelect("[管理员] 床位管理", -4, "设置床位占用", "查询床位占用记录", "取消床位占用", "退出床位管理");
         switch (choice) {
-        case 0: {
-            char patientName[100];
-            char admissionDate[50];
-            int zoneIndex, bedNumber;
-
-            printf("Enter patient name: ");
-            fgets(patientName, sizeof(patientName), stdin);
-            patientName[strcspn(patientName, "\n")] = 0;
-
-            printf("Enter admission date (e.g.2004-07-03): ");
-            fgets(admissionDate, sizeof(admissionDate), stdin);
-            admissionDate[strcspn(admissionDate, "\n")] = 0;
-
-            printf("Select a zone:\n");
-            for (int i = 0; i < MAX_ZONES; i++) {
-                printf("%d. %s\n", i + 1, zones[i].zoneName);
-            }
-            printf("Enter zone index: ");
-            scanf("%d", &zoneIndex);
-            if (zoneIndex > MAX_ZONES || zoneIndex < 1) {
-                printf("Invalid zone.( Numbers from 1-5 are acceptable.)\n");
-                break;
+        case 0:
+            long long patientId;
+            USERS* patient;
+            displayInput("输入患者ID", "%lld", &patientId);
+            patient = find_user_by_id(patientId);
+            if (patient == NULL) {
+                printf(Red("错误：")"患者 %lld 不存在。", patientId);
             } else {
-                getchar(); // Consume newline left in stdin buffer
-
-                printf("Enter bed number: ");
-                scanf("%d", &bedNumber);
-
-                // Check if the bed is available
-                if (bedNumber - 1 < MAX_BEDS_PER_ZONE && bedNumber >= 1) {
-                    if (zones[zoneIndex - 1].beds[bedNumber - 1].status == BED_STATUS_EMPTY) {
-                        recordOccupancy(patientName, admissionDate, zoneIndex - 1, bedNumber);
-                        printf("Occupancy recorded successfully.\n");
-                    } else {
-                        printf("The selected bed is already occupied.\n");
-                    }
-                    break;
-                } else
-                    printf("Invalid bed.( Numbers from 1-10 are acceptable.)\n");
-                break;
+                setOccupy(patientId);
             }
-        }
-        case 1: {
-            printf("Bed occupancy records:\n");
-            FILE* recordsFile = fopen("storage\\BedList.txt", "r");
-            if (recordsFile) {
+            break;
+        case 1:
+            printf("床位占用记录：\n");
+            FILE* file = fopen("storage\\BedRecord.txt", "r");
+            if (file) {
                 char line[256];
-                while (fgets(line, sizeof(line), recordsFile)) {
+                while (fgets(line, sizeof(line), file)) {
                     printf("%s", line);
                 }
-                fclose(recordsFile);
+                fclose(file);
             } else {
-                printf("No records found.\n");
+                printf("无床位占用记录。\n");
             }
             break;
-        }
-        case 2: {
+        case 2:
             int zoneIndex, bedNumber;
-
-            printf("Enter zone index to delete occupancy (1-%d): ", MAX_ZONES);
-            scanf("%d", &zoneIndex);
-            getchar();
-
-            if (zoneIndex < 1 || zoneIndex > MAX_ZONES) {
-                printf("Invalid zone index.\n");
-                break;
-            }
-
-            printf("Enter bed number to delete occupancy (1-%d): ", MAX_BEDS_PER_ZONE);
-            scanf("%d", &bedNumber);
-
-            if (bedNumber < 1 || bedNumber > MAX_BEDS_PER_ZONE) {
-                printf("Invalid bed number.\n");
-                break;
-            }
-
-            if (deleteOccupancy(zoneIndex - 1, bedNumber) == -1) {
-                printf("No existing occupancy there.\n");
+            if (selectBed(&zoneIndex, &bedNumber) == 0) {
+                if (deleteOccupancy(zoneIndex, bedNumber) == -1) {
+                    printf("No existing occupancy there.\n");
+                }
             }
             break;
-        }
         case -1:
         case 3:
-            saveZonesToFile("storage\\BedInfo.txt");
             return 0;
         }
         system("pause > nul");
-    } while (choice != 3);
-
-    return 0;
+    }
 }

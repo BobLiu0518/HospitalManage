@@ -12,8 +12,6 @@ typedef struct record {
     long long patientId;
     long long doctorId;
     char content[RECORD_CONTENT_LENGTH];
-    // TODO: ¿ªÒ©
-    // TODO: ×¡Ôº
 } Record;
 
 int loadRecordData();
