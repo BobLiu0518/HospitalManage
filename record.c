@@ -130,14 +130,14 @@ int printRecord(unsigned long recordId) {
 int checkHistoryRecord(long long patientId) {
     int historyRecordCount = 0, i, selection;
     char** recordTitle;
-    Record* historyRecord = calloc(records.length, sizeof(Record)), * record;
+    Record** historyRecord = calloc(records.length, sizeof(Record*)), * record;
     if (!records.length) {
         loadRecordData();
     }
     for (i = 0; i < records.length; i++) {
         record = getItem(&records, i);
         if (patientId == record->patientId) {
-            historyRecord[historyRecordCount] = *record;
+            historyRecord[historyRecordCount] = record;
             historyRecordCount++;
         }
     }
@@ -146,20 +146,21 @@ int checkHistoryRecord(long long patientId) {
         return -1;
     }
 
-    recordTitle = calloc(historyRecordCount, sizeof(char*));
+    recordTitle = calloc(historyRecordCount + 1, sizeof(char*));
     for (i = 0; i < historyRecordCount; i++) {
         recordTitle[i] = calloc(RECORD_TITLE_LENGTH, sizeof(char));
-        sprintf(recordTitle[i], "病历 #%010lu %04u/%02u/%02u %02u:%02u", historyRecord[i].recordId,
-            historyRecord[i].datetime.year, historyRecord[i].datetime.month, historyRecord[i].datetime.day,
-            historyRecord[i].datetime.hour, historyRecord[i].datetime.minute);
+        sprintf(recordTitle[i], "病历 #%010lu %04u/%02u/%02u %02u:%02u", historyRecord[i]->recordId,
+            historyRecord[i]->datetime.year, historyRecord[i]->datetime.month, historyRecord[i]->datetime.day,
+            historyRecord[i]->datetime.hour, historyRecord[i]->datetime.minute);
     }
+    recordTitle[historyRecordCount] = "退出病历查询";
 
     while (1) {
-        selection = displaySelect("请选择要查看的病历：", historyRecordCount, recordTitle);
-        if (selection == -1) {
+        selection = displaySelect("请选择要查看的病历：", historyRecordCount + 1, recordTitle);
+        if (selection == -1 || selection == historyRecordCount) {
             break;
         }
-        printRecord(historyRecord[selection].recordId);
+        printRecord(historyRecord[selection]->recordId);
         system("pause > nul");
     }
 
