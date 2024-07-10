@@ -192,7 +192,7 @@ int editClinicTime(unsigned clinicTimeId, char* title) {
     saveClinicTime();
 }
 
-int selectClinicTime(long long doctorId) {
+int manageClinicTime(long long doctorId) {
     int i, docClinicTimeCount = 0;
     char** title;
     if (!clinicTimes.ptr) {
@@ -259,6 +259,8 @@ ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime) 
     free(clinicTimeRecord);
     return getItem(&clinicTimeRecords, clinicTimeRecords.length - 1);
 }
+
+int manageRegistration() { }
 
 unsigned chooseClinicTime(Datetime datetime) {
     int i, availableTimesCount = 0, choice;

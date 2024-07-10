@@ -42,7 +42,7 @@ void doctorMain() {
         case 3:
             return;
         case 0:
-            selectClinicTime(currentUser->id);
+            manageClinicTime(currentUser->id);
             break;
         case 1:
             long long id;
@@ -65,7 +65,7 @@ void doctorMain() {
 void patientMain() {
     int selection;
     while (1) {
-        selection = displaySelect("欢迎使用患者系统", -4, "预约挂号", "查看挂号记录", "查看历史病历", "退出登录");
+        selection = displaySelect("欢迎使用患者系统", -4, "预约挂号", "查看历史病历", "退出登录");
         switch (selection) {
         case -1:
         case 3:
@@ -74,9 +74,6 @@ void patientMain() {
             assignRegistration(currentUser->id);
             break;
         case 1:
-            // TODO
-            break;
-        case 2:
             checkHistoryRecord(currentUser->id);
             break;
         }

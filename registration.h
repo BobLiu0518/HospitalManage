@@ -38,7 +38,7 @@ int saveClinicTimeRecord();
 int saveRegistrations();
 unsigned addClinicTime(long long doctorId);
 int editClinicTime(unsigned clinicTimeId, char* title);
-int selectClinicTime(long long doctorId);
+int manageClinicTime(long long doctorId);
 int setClinicTimeStatus(unsigned clinicTimeId, Status status);
 ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime);
 unsigned chooseClinicTime(Datetime datetime);
