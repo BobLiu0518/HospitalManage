@@ -432,7 +432,7 @@ int appendRegistration(long long patientId, unsigned clinicTimeId, Datetime date
 int assignRegistration(unsigned patientId) {
     char temp[15], trash;
     unsigned clinicTimeId;
-    Datetime datetime, now = getDateTime();
+    Datetime datetime = { 0 }, now = getDateTime();
     displayTitle("π“∫≈");
     displayInput("«Î ‰»Îπ“∫≈»’∆⁄", "%s", temp);
     sscanf(temp, "%u%c%u%c%u", &datetime.year, &trash, &datetime.month, &trash, &datetime.day);
