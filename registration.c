@@ -257,8 +257,8 @@ ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime) 
     return getItem(&clinicTimeRecords, clinicTimeRecords.length - 1);
 }
 
-unsigned chooseClinicTime(Datetime datetime) {
-    int i, availableTimesCount = 0, choice;
+int chooseClinicTime(Datetime datetime) {
+    int i, availableTimesCount = 0, selection;
     char** title = NULL;
     USERS* doctor;
 
@@ -290,8 +290,8 @@ unsigned chooseClinicTime(Datetime datetime) {
             doctor->title, clinicTime->startTime.hour, clinicTime->startTime.minute,
             clinicTime->endTime.hour, clinicTime->endTime.minute);
     }
-    choice = displaySelect("选择挂号医生和时段：", availableTimesCount, title);
-    clinicTime = choice == -1 ? NULL : availableTimes[choice];
+    selection = displaySelect("选择挂号医生和时段：", availableTimesCount, title);
+    clinicTime = selection == -1 ? NULL : availableTimes[selection];
 
     for (i = 0; i < availableTimesCount; i++) {
         free(title[i]);
@@ -437,7 +437,7 @@ int assignRegistration(unsigned patientId) {
     displayInput("请输入挂号日期", "%s", temp);
     sscanf(temp, "%u%c%u%c%u", &datetime.year, &trash, &datetime.month, &trash, &datetime.day);
     if (datetime.year < now.year || datetime.year == now.year && datetime.month < now.month
-        || datetime.year == now.year && datetime.month == now.month && datetime.minute < now.minute) {
+        || datetime.year == now.year && datetime.month == now.month && datetime.day < now.day) {
         printf(Red("错误：")"只能选择未来的日期。\n");
         return -1;
     }

@@ -41,7 +41,7 @@ unsigned addClinicTime(long long doctorId);
 int editClinicTime(unsigned clinicTimeId, char* title);
 int manageClinicTime(long long doctorId);
 ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime);
-unsigned chooseClinicTime(Datetime datetime);
+int chooseClinicTime(Datetime datetime);
 void printRegistration(unsigned registrationId, short showTitle);
 int editRegistrationRecord(unsigned registrationId);
 int checkRegistrationRecord(long long patientId);
