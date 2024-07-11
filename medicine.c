@@ -8,10 +8,10 @@
 Medicine* medicineHead = NULL;
 
 void freeMedicine() {
-    Medicine* current = medicineHead, * temp;
-    while (current != NULL) {
-        temp = current;
-        current = current->next;
+    Medicine* temp;
+    while (medicineHead != NULL) {
+        temp = medicineHead;
+        medicineHead = medicineHead->next;
         free(temp);
     }
 }
@@ -36,7 +36,6 @@ void exportMedicine() {
 
 void importMedicine() {
     FILE* fp = fopen("storage\\MedicineList.txt", "r");
-    Medicine* current;
     if (fp == NULL) {
         printf(Red("错误：")"打开 storage\\MedicineList.txt 失败。\n");
         return;
@@ -46,11 +45,6 @@ void importMedicine() {
     }
     char fullName[100], abbreviation[20];
     int stock;
-    while (medicineHead) {
-        current = medicineHead->next;
-        free(medicineHead);
-        medicineHead = current;
-    }
     while (!feof(fp)) {
         fscanf(fp, "Full Name: %[^,], Abbreviation: %[^,], Stock: %d\n", fullName, abbreviation, &stock);
         Medicine* newMedicine = (Medicine*)malloc(sizeof(Medicine));
@@ -164,7 +158,6 @@ void deleteMedicine() {
 
 int medicineMain() {
     int choice;
-    importMedicine();
     while (1) {
         choice = displaySelect("[管理员] 药品管理", -5, "添加新药品", "查看药品库存", "更新药品库存", "删除药品", "退出药品管理");
         switch (choice) {

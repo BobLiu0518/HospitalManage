@@ -91,7 +91,7 @@ int appendRecord(long long doctorId) {
     newRecord.recordId = ((Record*)getItem(&records, records.length - 1))->recordId + 1;
     newRecord.datetime = getDateTime();
     newRecord.doctorId = doctorId;
-    displayInput("请输入患者 ID", "%lld", &newRecord.patientId);
+    displayInput("请输入患者就诊卡号", "%lld", &newRecord.patientId);
     patient = find_user_by_id(newRecord.patientId);
     if (!patient || patient->user_type != 2) {
         printf(Red("错误：")"患者 %lld 不存在。\n", newRecord.patientId);
@@ -120,6 +120,7 @@ int appendRecord(long long doctorId) {
         if (!setOccupy(patient->id)) {
             strcat(newRecord.content, "\n【住院】");
         }
+        system("pause > nul");
     }
     appendItem(&records, &newRecord);
     saveRecordData();

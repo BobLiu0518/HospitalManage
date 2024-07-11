@@ -150,7 +150,7 @@ int bedMain() {
         case 0:
             long long patientId;
             USERS* patient;
-            displayInput("输入患者ID", "%lld", &patientId);
+            displayInput("输入患者就诊卡号", "%lld", &patientId);
             patient = find_user_by_id(patientId);
             if (patient == NULL || patient->user_type != 2) {
                 printf(Red("错误：")"患者 %lld 不存在。", patientId);
