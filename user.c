@@ -273,7 +273,7 @@ USERS* login() {
         read_user_data();
     }
     displayTitle("登录");
-    displayInput("请输入账户名", "%lld", &input_id);
+    displayInput("请输入就诊卡号或工号", "%lld", &input_id);
 
     USERS* user = find_user_by_id(input_id);
     if (user == NULL) {
