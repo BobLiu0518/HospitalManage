@@ -72,6 +72,7 @@ Medicine* getMedicine(char abbr[ ]) {
         if (strcmp(current->abbreviation, abbr) == 0) {
             return current;
         }
+        current = current->next;
     }
     return NULL;
 }

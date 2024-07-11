@@ -104,6 +104,7 @@ int appendRecord(long long doctorId) {
         if (i) {
             break;
         }
+        displayTitle("添加用药");
         displayInput("请输入药物缩写", "%s", medicineAbbr);
         displayInput("请输入药物用量", "%d", &i);
         if (!ModifyStock(medicineAbbr, i)) {

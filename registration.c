@@ -233,15 +233,6 @@ int manageClinicTime(long long doctorId) {
     return 0;
 }
 
-int setClinicTimeStatus(unsigned clinicTimeId, Status status) {
-    if (!clinicTimes.ptr) {
-        loadClinicTime();
-    }
-    ((ClinicTime*)getItem(&clinicTimes, clinicTimeId))->status = status;
-    saveClinicTime();
-    return 0;
-}
-
 ClinicTimeRecord* getClinicTimeRecord(unsigned clinicTimeId, Datetime datetime) {
     int i;
     ClinicTimeRecord* clinicTimeRecord;
@@ -299,7 +290,7 @@ unsigned chooseClinicTime(Datetime datetime) {
             doctor->title, clinicTime->startTime.hour, clinicTime->startTime.minute,
             clinicTime->endTime.hour, clinicTime->endTime.minute);
     }
-    choice = displaySelect("选择挂号时间段：", availableTimesCount, title);
+    choice = displaySelect("选择挂号医生和时段：", availableTimesCount, title);
     clinicTime = choice == -1 ? NULL : availableTimes[choice];
 
     for (i = 0; i < availableTimesCount; i++) {
@@ -440,7 +431,6 @@ int assignRegistration(unsigned patientId) {
     displayTitle("挂号");
     displayInput("请输入挂号日期", "%s", temp);
     sscanf(temp, "%u%c%u%c%u", &datetime.year, &trash, &datetime.month, &trash, &datetime.day);
-    printf("请选择挂号医生和时段：\n");
     clinicTimeId = chooseClinicTime(datetime);
     if (clinicTimeId == -1) {
         return -1;
