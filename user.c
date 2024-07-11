@@ -274,28 +274,25 @@ USERS* login() {
     }
     displayTitle("µÇÂ¼");
     displayInput("ÇëÊäÈëÕË»§Ãû", "%lld", &input_id);
+
+    USERS* user = find_user_by_id(input_id);
+    if (user == NULL) {
+        printf(Red("µÇÂ¼Ê§°Ü£º")"ÓÃ»§ %lld ²»´æÔÚ¡£\n", input_id);
+        system("pause > nul");
+        return NULL;
+    }
     displayInputPassword("ÇëÊäÈëÃÜÂë", input_password, 100);
     encryptPassword(input_password, encrypt_password);
-
-    USERS* temp = user_head;
-    while (temp != NULL) {
-        if (temp->id == input_id) {
-            if (strcmp(temp->password, encrypt_password) == 0) {
-                printf("µÇÂ¼³É¹¦£¬»¶Ó­ %s¡£\n", temp->name);
-                system("pause > nul");
-                return temp;
-            } else {
-                printf(Red("µÇÂ¼Ê§°Ü£º")"ÃÜÂë´íÎó¡£\n");
-                system("pause > nul");
-                return NULL;
-            }
-        }
-        temp = temp->next;
+    if (strcmp(user->password, encrypt_password) == 0) {
+        printf("µÇÂ¼³É¹¦£¬»¶Ó­ %s¡£\n", user->name);
+        system("pause > nul");
+        return user;
+    } else {
+        printf(Red("µÇÂ¼Ê§°Ü£º")"ÃÜÂë´íÎó¡£\n");
+        system("pause > nul");
+        return NULL;
     }
 
-    printf(Red("µÇÂ¼Ê§°Ü£º")"ÓÃ»§ %lld ²»´æÔÚ¡£\n", input_id);
-    system("pause > nul");
-    return NULL;
 }
 
 void free_users() {
@@ -327,7 +324,7 @@ void display_user_info(USERS* user) {
 
     printf("ÓÃ»§ID: %lld\n", user->id);
     printf("ÓÃ»§Ãû: %s\n", user->name);
-    // printf("ÃÜÂë: %s\n", user->password);  // Êµ¼ÊÓ¦ÓÃÖĞ²»´òÓ¡ÃÜÂë  
+    // printf("ÃÜÂë:   %s\n", user->password);  // Êµ¼ÊÓ¦ÓÃÖĞ²»´òÓ¡ÃÜÂë  
     printf("µç»°:   %s\n", user->phone);
     printf("ĞÔ±ğ:   %s\n", user->sex);
     printf("ÉúÈÕ:   %d/%d/%d\n", user->birth.year, user->birth.month, user->birth.date);
