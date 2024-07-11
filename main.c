@@ -75,6 +75,7 @@ void patientMain() {
             return;
         case 0:
             assignRegistration(currentUser->id);
+            system("pause > nul");
             break;
         case 1:
             checkRegistrationRecord(currentUser->id);

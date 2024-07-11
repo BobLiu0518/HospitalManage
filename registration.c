@@ -403,6 +403,11 @@ int appendRegistration(long long patientId, unsigned clinicTimeId, Datetime date
         printf(Red("错误：")"日期不匹配。\n");
         return -1;
     }
+    if (datetime.hour < clinicTime->startTime.hour || datetime.hour == clinicTime->startTime.hour && datetime.minute < clinicTime->startTime.minute
+        || datetime.hour > clinicTime->endTime.hour || datetime.hour == clinicTime->endTime.hour && datetime.minute > clinicTime->endTime.minute) {
+        printf(Red("错误：")"选择的时间不在挂号时间段内。\n");
+        return -1;
+    }
     clinicTimeRecord = getClinicTimeRecord(clinicTimeId, datetime);
     if (clinicTimeRecord->remainAmount > 0) {
         clinicTimeRecord->remainAmount--;
@@ -427,10 +432,15 @@ int appendRegistration(long long patientId, unsigned clinicTimeId, Datetime date
 int assignRegistration(unsigned patientId) {
     char temp[15], trash;
     unsigned clinicTimeId;
-    Datetime datetime;
+    Datetime datetime, now = getDateTime();
     displayTitle("挂号");
     displayInput("请输入挂号日期", "%s", temp);
     sscanf(temp, "%u%c%u%c%u", &datetime.year, &trash, &datetime.month, &trash, &datetime.day);
+    if (datetime.year < now.year || datetime.year == now.year && datetime.month < now.month
+        || datetime.year == now.year && datetime.month == now.month && datetime.minute < now.minute) {
+        printf(Red("错误：")"只能选择未来的日期。\n");
+        return -1;
+    }
     clinicTimeId = chooseClinicTime(datetime);
     if (clinicTimeId == -1) {
         return -1;
@@ -438,8 +448,13 @@ int assignRegistration(unsigned patientId) {
     displayTitle("挂号");
     displayInput("请输入预约时间", "%s", temp);
     sscanf(temp, "%u%c%u", &datetime.hour, &trash, &datetime.minute);
-    appendRegistration(patientId, clinicTimeId, datetime);
-    printf("挂号成功，你的挂号信息如下：\n");
-    printRegistration(registrations.length - 1, 0);
-    system("pause > nul");
+    if (datetime.hour > 23 || datetime.minute > 59) {
+        printf(Red("错误：")"时间不合法。\n");
+        return -1;
+    }
+    if (!appendRegistration(patientId, clinicTimeId, datetime)) {
+        printf("挂号成功，你的挂号信息如下：\n");
+        printRegistration(registrations.length - 1, 0);
+    }
+    return 0;
 }
